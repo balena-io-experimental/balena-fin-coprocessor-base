@@ -22,7 +22,7 @@ include(${BASE_LOCATION}/toolchain/arm-gcc.cmake)
 ##### Project Setup #####
 
 # Set our output target
-set(TARGET efm32-test)
+set(TARGET firmata)
 
 # Configure project and languages
 project(${TARGET} C CXX ASM)
@@ -42,17 +42,27 @@ endif()
 # Libraries can be added to the LIBS variable
 # or manually included here.
 
-# Add base libs (emlib, CMSIS, device files)
-include(${BASE_LOCATION}/toolchain/efm32-base.cmake)
+# Add base libs (emlib, emdrv, CMSIS, device files)
+include(${BASE_LOCATION}/toolchain/firmata.cmake)
 
 ##### Files #####
 
 # Add project headers
-include_directories(${BASE_LOCATION}/include)
+include_directories(
+	${BASE_LOCATION}/include/balena
+	${BASE_LOCATION}/include/firmata
+	${BASE_LOCATION}/include/serial
+	${BASE_LOCATION}/include/config
+)
 
 # Add project sources
 set(SOURCES
-	source/main.c
+	source/StandardFirmata.cpp
+	source/protocol/balena/balena.cpp
+	source/protocol/firmata/Firmata.cpp
+	source/protocol/firmata/FirmataMarshaller.cpp
+	source/protocol/firmata/FirmataParser.cpp
+	source/protocol/serial/serial.cpp
 )
 
 ##### Outputs #####

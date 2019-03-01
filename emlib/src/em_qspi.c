@@ -1,10 +1,10 @@
 /***************************************************************************//**
  * @file em_qspi.c
  * @brief QSPI Octal-SPI Flash Controller API
- * @version 5.2.1
+ * @version 5.6.0
  *******************************************************************************
  * # License
- * <b>Copyright 2016 Silicon Laboratories, Inc. http://www.silabs.com</b>
+ * <b>Copyright 2016 Silicon Laboratories, Inc. www.silabs.com</b>
  *******************************************************************************
  *
  * Permission is granted to anyone to use this software for any purpose,
@@ -53,8 +53,8 @@
  *  @li @b STIG Command, used for configuring and executing commands on the
  *    external memory device.
  *
- *  Indirect read/write, PHY configuration and Execute-In-Place (XIP)
- *  configuration is not supported.
+ *  Indirect read/write, PHY configuration, and Execute-In-Place (XIP)
+ *  configurations are not supported.
  *
  * The example below shows how to set up the QSPI for direct read and write
  * operation:
@@ -65,7 +65,7 @@
    QSPI_Init_TypeDef initQspi = QSPI_INIT_DEFAULT;
    QSPI_Init(QSPI0, &initQspi);
 
-   // Configure QSPI pins
+   // Configure QSPI pins.
    GPIO_PinModeSet(EXTFLASH_PORT_CS,   EXTFLASH_PIN_CS,   gpioModePushPull, 0);
    GPIO_PinModeSet(EXTFLASH_PORT_SCLK, EXTFLASH_PIN_SCLK, gpioModePushPull, 0);
    GPIO_PinModeSet(EXTFLASH_PORT_DQ0,  EXTFLASH_PIN_DQ0,  gpioModePushPull, 0);
@@ -73,7 +73,7 @@
    GPIO_PinModeSet(EXTFLASH_PORT_DQ2,  EXTFLASH_PIN_DQ2,  gpioModePushPull, 0);
    GPIO_PinModeSet(EXTFLASH_PORT_DQ3,  EXTFLASH_PIN_DQ3,  gpioModePushPull, 0);
 
-   // Configure QSPI routing to GPIO
+   // Configure QSPI routing to GPIO.
    QSPI0->ROUTELOC0 = EXTFLASH_QSPI_LOC;
    QSPI0->ROUTEPEN  = QSPI_ROUTEPEN_SCLKPEN
                       | EXTFLASH_QSPI_CSPEN
@@ -82,7 +82,7 @@
                       | QSPI_ROUTEPEN_DQ2PEN
                       | QSPI_ROUTEPEN_DQ3PEN;
 
-   // Configure direct read
+   // Configure the direct read.
    QSPI_ReadConfig_TypeDef readConfig = QSPI_READCONFIG_DEFAULT;
 
    readConfig.dummyCycles  = 8;
@@ -93,7 +93,7 @@
 
    QSPI_ReadConfig(QSPI0, &readConfig);
 
-   // Configure direct write
+   // Configure the direct write.
    QSPI_WriteConfig_TypeDef writeConfig = QSPI_WRITECONFIG_DEFAULT;
 
    writeConfig.dummyCycles  = 0;
@@ -104,7 +104,7 @@
 
    QSPI_WriteConfig(QSPI0, &writeConfig);@endcode
  *
- * To configure an external flash, commands can set up and executed using the
+ * To configure an external flash, commands can be set up and executed using the
  * Software Triggered Instruction Generator (STIG) function of the QSPI, as
  * shown in the example below:
  * @code
@@ -127,10 +127,10 @@
  *   Initialize QSPI.
  *
  * @param[in] qspi
- *   Pointer to the QSPI peripheral register block.
+ *   A pointer to the QSPI peripheral register block.
  *
  * @param[in] init
- *   Pointer to initialization structure used to configure QSPI.
+ *   A pointer to the initialization structure used to configure QSPI.
  ******************************************************************************/
 void QSPI_Init(QSPI_TypeDef * qspi, const QSPI_Init_TypeDef * init)
 {
@@ -149,10 +149,10 @@ void QSPI_Init(QSPI_TypeDef * qspi, const QSPI_Init_TypeDef * init)
  *   Configure Read Operations.
  *
  * @param[in] qspi
- *   Pointer to the QSPI peripheral register block.
+ *   A pointer to the QSPI peripheral register block.
  *
  * @param[in] config
- *   Pointer to configuration structure for QSPI read operations.
+ *   A pointer to the configuration structure for QSPI read operations.
  ******************************************************************************/
 void QSPI_ReadConfig(QSPI_TypeDef * qspi, const QSPI_ReadConfig_TypeDef * config)
 {
@@ -171,10 +171,10 @@ void QSPI_ReadConfig(QSPI_TypeDef * qspi, const QSPI_ReadConfig_TypeDef * config
  *   Configure Write Operations.
  *
  * @param[in] qspi
- *   Pointer to the QSPI peripheral register block.
+ *   A pointer to the QSPI peripheral register block.
  *
  * @param[in] config
- *   Pointer to configuration structure for QSPI write operations.
+ *   A pointer to the configuration structure for QSPI write operations.
  ******************************************************************************/
 void QSPI_WriteConfig(QSPI_TypeDef * qspi, const QSPI_WriteConfig_TypeDef * config)
 {
@@ -193,16 +193,16 @@ void QSPI_WriteConfig(QSPI_TypeDef * qspi, const QSPI_WriteConfig_TypeDef * conf
  *   Execute a STIG command.
  *
  * @details
- *   STIG means "software triggered instruction generator" and is used when the
+ *   STIG is used when the
  *   application needs to access status registers, configuration registers or
- *   perform erase functions. The STIG commands can be used to perform any
+ *   perform erase functions. STIG commands can be used to perform any
  *   instruction that the flash device supports.
  *
  * @param[in] qspi
- *   Pointer to the QSPI peripheral register block.
+ *   A pointer to the QSPI peripheral register block.
  *
  * @param[in] stigCmd
- *   Pointer to a structure that describes the STIG command.
+ *   A pointer to a structure that describes the STIG command.
  ******************************************************************************/
 void QSPI_ExecStigCmd(QSPI_TypeDef * qspi, const QSPI_StigCmd_TypeDef * stigCmd)
 {

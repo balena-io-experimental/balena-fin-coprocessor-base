@@ -17,4 +17,5 @@ builds/
 
 # Misc
 *.DS_Store
+.vscode
 

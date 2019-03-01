@@ -1,10 +1,10 @@
 /***************************************************************************//**
  * @file em_qspi.h
  * @brief QSPI Octal-SPI Flash Controller API
- * @version 5.2.1
+ * @version 5.6.0
  *******************************************************************************
  * # License
- * <b>Copyright 2016 Silicon Laboratories, Inc. http://www.silabs.com</b>
+ * <b>Copyright 2016 Silicon Laboratories, Inc. www.silabs.com</b>
  *******************************************************************************
  *
  * Permission is granted to anyone to use this software for any purpose,
@@ -80,7 +80,7 @@ typedef enum {
  *******************************   STRUCTS   ***********************************
  ******************************************************************************/
 
-/** QSPI Device Read Instruction Configuration structure. */
+/** QSPI Device Read Instruction Configuration Structure. */
 typedef struct {
   /** Read opcode in non-xip mode. */
   uint8_t                   opCode;
@@ -98,7 +98,7 @@ typedef struct {
   QSPI_TransferType_TypeDef instTransfer;
 } QSPI_ReadConfig_TypeDef;
 
-/** Default read configuration structure. */
+/** Default Read Configuration Structure. */
 #define QSPI_READCONFIG_DEFAULT                                  \
   {                                                              \
     0x03,                /* 0x03 is the standard read opcode. */ \
@@ -108,7 +108,7 @@ typedef struct {
     qspiTransferSingle,  /* Single I/O mode. */                  \
   }
 
-/** QSPI Device Write Instruction Configuration structure. */
+/** QSPI Device Write Instruction Configuration Structure. */
 typedef struct {
   /** Write opcode. */
   uint8_t                   opCode;
@@ -128,15 +128,15 @@ typedef struct {
    *   command before a write operation.
    *
    * @details
-   *   When writing to a flash device the write enable latch (WEL)
-   *   within the flash device itself must be high before a write sequence can be
-   *   issued. The QSPI peripheral can automatically issue the write enable latch
-   *   command before triggering a write sequence. The command used for enabling
-   *   the write enable latch is WREN (0x06) and is common between devices. */
+   *   When writing to a flash device, the WEL within the flash device must be
+   *   high before a write sequence can be issued. The QSPI peripheral can
+   *   automatically issue the WEL command before triggering a write sequence.
+   *   The command used for enabling the WEL is WREN (0x06) and is common between
+   *   devices. */
   bool                      autoWEL;
 } QSPI_WriteConfig_TypeDef;
 
-/** Default write configuration structure. */
+/** Default Write Configuration Structure. */
 #define QSPI_WRITECONFIG_DEFAULT                                  \
   {                                                               \
     0x02,                /* 0x02 is the standard write opcode. */ \
@@ -146,7 +146,7 @@ typedef struct {
     true,                /* Send WEL command automatically. */    \
   }
 
-/** QSPI Device Delay Configuration structure. */
+/** QSPI Device Delay Configuration Structure. */
 typedef struct {
   /** The minimal delay to keep the chip select line de-asserted between
    *  two transactions. */
@@ -165,23 +165,23 @@ typedef struct {
 
 /** Defines command to be executed using STIG mechanism. */
 typedef struct {
-  /** command op-code */
+  /** Command op-code. */
   uint8_t  cmdOpcode;
-  /** Number of Read Data Bytes */
+  /** Number of Read Data Bytes. */
   uint16_t readDataSize;
-  /** Number of Address Bytes */
+  /** Number of Address Bytes. */
   uint8_t  addrSize;
-  /** Number of Write Data Bytes */
+  /** Number of Write Data Bytes. */
   uint8_t  writeDataSize;
-  /** Number of dummy cycles */
+  /** Number of dummy cycles. */
   uint8_t  dummyCycles;
   /** Mode Bit Configuration register are sent following the address bytes. */
   bool     modeBitEnable;
-  /** flash command address */
+  /** Flash command address. */
   uint32_t address;
-  /** buffer for read data */
+  /** Buffer for read data. */
   void *   readBuffer;
-  /** buffer with data to write */
+  /** Buffer with data to write. */
   void *   writeBuffer;
 } QSPI_StigCmd_TypeDef;
 
@@ -291,7 +291,7 @@ __STATIC_INLINE uint32_t QSPI_IntGet(QSPI_TypeDef * qspi)
 
 /***************************************************************************//**
  * @brief
- *   Clear interrupt flags
+ *   Clear interrupt flags.
  *
  * @param[in] qspi
  *   Pointer to QSPI peripheral register block.
