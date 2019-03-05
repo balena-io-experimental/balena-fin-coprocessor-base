@@ -3,12 +3,16 @@
 # Copyright (c) 2016 Ryan Kurte
 # This file is covered under the MIT license available at: https://opensource.org/licenses/MIT
 
-.PHONY: setup efm32g efm32bg efm32gg efm32zg efm32wg efm32lg efm32tg efm32hg ezr32lg ezr32wg efm32pg efr32fg
+.PHONY: setup balena efm32g efm32bg efm32gg efm32zg efm32wg efm32lg efm32tg efm32hg ezr32lg ezr32wg efm32pg efr32fg
 
-test: setup efm32g efm32bg efm32gg efm32zg efm32wg efm32lg efm32tg efm32hg ezr32lg ezr32wg efm32pg efr32fg 
+test: setup balena efm32g efm32bg efm32gg efm32zg efm32wg efm32lg efm32tg efm32hg ezr32lg ezr32wg efm32pg efr32fg 
 
 setup:
 	mkdir -p builds
+
+#BalenaFin
+balena:
+	cd builds; rm -rf $@; mkdir $@; cd $@; cmake -DDEVICE=EFR32BG1B232F256GM48 ../..; make
 
 #EFM32G Family
 efm32g:
