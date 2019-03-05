@@ -57,12 +57,12 @@ include_directories(
 
 # Add project sources
 set(SOURCES
-	source/StandardFirmata.cpp
-	source/protocol/balena/balena.cpp
-	source/protocol/firmata/Firmata.cpp
-	source/protocol/firmata/FirmataMarshaller.cpp
-	source/protocol/firmata/FirmataParser.cpp
-	source/protocol/serial/serial.cpp
+	${BASE_LOCATION}/source/StandardFirmata.cpp
+	${BASE_LOCATION}/source/protocol/balena/balena.cpp
+	${BASE_LOCATION}/source/protocol/firmata/Firmata.cpp
+	${BASE_LOCATION}/source/protocol/firmata/FirmataMarshaller.cpp
+	${BASE_LOCATION}/source/protocol/firmata/FirmataParser.cpp
+	${BASE_LOCATION}/source/protocol/serial/Serial.cpp
 )
 
 ##### Outputs #####
