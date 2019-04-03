@@ -1,6 +1,5 @@
 #include "Serial.h"
 
-
 struct circularBuffer
 {
   uint8_t  data[BUFFERSIZE];  /* data buffer */
@@ -84,13 +83,13 @@ SerialClass::SerialClass(){
 	CMU_ClockEnable(cmuClock_GPIO, true);
 
 	/* Configure GPIO pins */
-	GPIO_PinModeSet(CM3_PIN_RX, gpioModeInput, 0);
-	GPIO_PinModeSet(CM3_PIN_TX, gpioModePushPull, 1);
+	GPIO_PinModeSet(DEV_PIN_RX, gpioModeInput, 0);
+	GPIO_PinModeSet(DEV_PIN_TX, gpioModePushPull, 1);
 
 	/* Prepare struct for initializing UART in asynchronous mode*/
 	uartInit.enable       = usartDisable;   /* Don't enable UART upon intialization */
 	uartInit.refFreq      = 0;              /* Provide information on reference frequency. When set to 0, the reference frequency is */
-	uartInit.baudrate     = 57600;          /* Firmata Standard Baud rate*/
+	uartInit.baudrate     = 57600;          /* Standard Baud rate*/
 	uartInit.oversampling = usartOVS16;     /* 16x Oversampling */
 	uartInit.databits     = usartDatabits8; /* Number of data bits */
 	uartInit.parity       = usartNoParity;  /* Parity mode */
@@ -109,13 +108,13 @@ SerialClass::SerialClass(long baudrate){
 	CMU_ClockEnable(cmuClock_GPIO, true);
 
 	/* Configure GPIO pins */
-	GPIO_PinModeSet(CM3_PIN_RX, gpioModeInput, 0);
-	GPIO_PinModeSet(CM3_PIN_TX, gpioModePushPull, 1);
+	GPIO_PinModeSet(DEV_PIN_RX, gpioModeInput, 0);
+	GPIO_PinModeSet(DEV_PIN_TX, gpioModePushPull, 1);
 
 	/* Prepare struct for initializing UART in asynchronous mode*/
 	uartInit.enable       = usartDisable;   /* Don't enable UART upon intialization */
 	uartInit.refFreq      = 0;              /* Provide information on reference frequency. When set to 0, the reference frequency is */
-	uartInit.baudrate     = baudrate;          /* Firmata Standard Baud rate*/
+	uartInit.baudrate     = baudrate;       /* Standard Baud rate*/
 	uartInit.oversampling = usartOVS16;     /* 16x Oversampling */
 	uartInit.databits     = usartDatabits8; /* Number of data bits */
 	uartInit.parity       = usartNoParity;  /* Parity mode */
@@ -147,7 +146,7 @@ void SerialClass::begin(long baudrate){
 
 	/* Enable I/O pins at UART1 location #2 */
 	USART0->ROUTEPEN |= USART_ROUTEPEN_TXPEN | USART_ROUTEPEN_RXPEN;
-	USART0->ROUTELOC0 = CM3_LOC;
+	USART0->ROUTELOC0 = DEV_LOC;
 
 	/* Enable UART */
 	USART_Enable(USART0, usartEnable);

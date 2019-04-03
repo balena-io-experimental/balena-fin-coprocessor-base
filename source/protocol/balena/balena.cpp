@@ -327,7 +327,7 @@ void setIDAC(unsigned int pin_no, uint8_t step){
 };
 
 /******************************************************************************
- * @brief  Arduino-Firmata Functions
+ * @brief  Arduino-style Functions
  *
  *****************************************************************************/
 
@@ -411,6 +411,19 @@ uint32_t millis(){
 void delay(unsigned int n){
 	USTIMER_Delay(n * 1000);
 };
+
+void triggerEvent(RTCDRV_TimerType_t type, uint32_t timeout, RTCDRV_Callback_t callback, void *user){
+	RTCDRV_StartTimer(id, type, timeout, callback, user);
+}
+
+/******************************************************************************
+ * @brief  Power Saving Functions
+ *
+ *****************************************************************************/
+
+void powerDown(int64_t interval){
+	
+}
 
 /******************************************************************************
  * @brief  I2C Functions

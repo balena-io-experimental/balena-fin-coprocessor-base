@@ -31,6 +31,10 @@ extern "C" {
 #define DEV_PIN_RX gpioPortA,1
 #define DEV_PIN_TX gpioPortA,0
 
+#define TEST_LOC USART_ROUTELOC0_RXLOC_LOC1|USART_ROUTELOC0_TXLOC_LOC3
+#define TEST_PIN_RX gpioPortA,2
+#define TEST_PIN_TX gpioPortA,3
+
 #define EMDRV_UARTDRV_MAX_CONCURRENT_BUFS 12
 #define BUFFERSIZE 256
 #define RESET 0x00000000UL

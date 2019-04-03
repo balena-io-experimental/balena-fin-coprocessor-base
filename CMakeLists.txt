@@ -22,7 +22,7 @@ include(${BASE_LOCATION}/toolchain/arm-gcc.cmake)
 ##### Project Setup #####
 
 # Set our output target
-set(TARGET firmata)
+set(TARGET main)
 
 # Configure project and languages
 project(${TARGET} C CXX ASM)
@@ -43,25 +43,21 @@ endif()
 # or manually included here.
 
 # Add base libs (emlib, emdrv, CMSIS, device files)
-include(${BASE_LOCATION}/toolchain/firmata.cmake)
+include(${BASE_LOCATION}/toolchain/main.cmake)
 
 ##### Files #####
 
 # Add project headers
 include_directories(
 	${BASE_LOCATION}/include/balena
-	${BASE_LOCATION}/include/firmata
 	${BASE_LOCATION}/include/serial
 	${BASE_LOCATION}/include/config
 )
 
 # Add project sources
 set(SOURCES
-	${BASE_LOCATION}/source/StandardFirmata.cpp
+	${BASE_LOCATION}/source/main.cpp
 	${BASE_LOCATION}/source/protocol/balena/balena.cpp
-	${BASE_LOCATION}/source/protocol/firmata/Firmata.cpp
-	${BASE_LOCATION}/source/protocol/firmata/FirmataMarshaller.cpp
-	${BASE_LOCATION}/source/protocol/firmata/FirmataParser.cpp
 	${BASE_LOCATION}/source/protocol/serial/Serial.cpp
 )
 
