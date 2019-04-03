@@ -83,8 +83,8 @@ SerialClass::SerialClass(){
 	CMU_ClockEnable(cmuClock_GPIO, true);
 
 	/* Configure GPIO pins */
-	GPIO_PinModeSet(DEV_PIN_RX, gpioModeInput, 0);
-	GPIO_PinModeSet(DEV_PIN_TX, gpioModePushPull, 1);
+	GPIO_PinModeSet(CM3_PIN_RX, gpioModeInput, 0);
+	GPIO_PinModeSet(CM3_PIN_TX, gpioModePushPull, 1);
 
 	/* Prepare struct for initializing UART in asynchronous mode*/
 	uartInit.enable       = usartDisable;   /* Don't enable UART upon intialization */
@@ -108,8 +108,8 @@ SerialClass::SerialClass(long baudrate){
 	CMU_ClockEnable(cmuClock_GPIO, true);
 
 	/* Configure GPIO pins */
-	GPIO_PinModeSet(DEV_PIN_RX, gpioModeInput, 0);
-	GPIO_PinModeSet(DEV_PIN_TX, gpioModePushPull, 1);
+	GPIO_PinModeSet(CM3_PIN_RX, gpioModeInput, 0);
+	GPIO_PinModeSet(CM3_PIN_TX, gpioModePushPull, 1);
 
 	/* Prepare struct for initializing UART in asynchronous mode*/
 	uartInit.enable       = usartDisable;   /* Don't enable UART upon intialization */
@@ -146,7 +146,7 @@ void SerialClass::begin(long baudrate){
 
 	/* Enable I/O pins at UART1 location #2 */
 	USART0->ROUTEPEN |= USART_ROUTEPEN_TXPEN | USART_ROUTEPEN_RXPEN;
-	USART0->ROUTELOC0 = DEV_LOC;
+	USART0->ROUTELOC0 = CM3_LOC;
 
 	/* Enable UART */
 	USART_Enable(USART0, usartEnable);
