@@ -1,6 +1,6 @@
 #include "balena.h"
 #include "Serial.h"
-// #include "rtcdriver.h"
+
 #define BUFFER 7
 #define SLEEP 0x61
 #define END   0xFF
@@ -54,17 +54,17 @@ void processSerial(){
  *****************************************************************************/
 int main(void)
 {
-	balenaInit();
-	Serial.begin(57600);
+  balenaInit();
+  Serial.begin(57600);
  
-	while(1){
+  while(1){
     if(Serial.available() > 0){
       if(Serial.read() == SLEEP){
         Serial.write(ACK);
         processSerial();
       }
     }
-	}
+  }
 }
 
 
