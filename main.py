@@ -4,8 +4,10 @@ import struct
 import time
 import sys
 
-START       = 0x61
-END         = 0xFF
+START       = 0xF0
+BALENA_COMMAND = 0x0B
+SLEEP_COMMAND = 0x01
+END         = 0xF7
 ACK         = 0x00
 POWER       = 16
 POWER_STATE = 0
@@ -38,19 +40,25 @@ class Sleep(object):
             assert sys.getsizeof(time) <= 32
         except AssertionError as error:
             print("Invalid: time must be uint32_t or smaller")
+        print(time)
         self.data = list((time >> i) & 0xFF for i in range(0,32,8))
-        self.data.extend([pin, state, END])
+        self.data.insert(0,0x05) # initial period until delay starts
+        self.data.append(END)
 
     def trigger(self):
         """Trigger sleep event
         Sends command over serial interface
         """
-        try:
-            assert len(self.data) == PAYLOAD_LEN
-        except AssertionError as error:
-            print("Missing Params: (time, pin, state)")
-        self.ser.write(bytearray([START]))
+        # try:
+        #     assert len(self.data) == PAYLOAD_LEN
+        # except AssertionError as error:
+        #     print("Missing Params: (time, pin, state)")
+        print([START, BALENA_COMMAND, SLEEP_COMMAND])
+        print(self.data)
+        self.ser.write(bytearray([START, BALENA_COMMAND, SLEEP_COMMAND]))
         self.ser.write(bytearray(self.data))
+        while(True):
+            print(self.ser.read())
 
 if __name__ == '__main__':
     s = Sleep()
@@ -60,5 +68,5 @@ if __name__ == '__main__':
         state = int(sys.argv[3])
         s.set(time, pin, state)
     else:
-        s.set(10000, POWER, POWER_STATE) # e.g. sleep (initial state HIGH) for 10000 milliseconds
+        s.set(10, POWER, POWER_STATE) # e.g. sleep (initial state HIGH) for 10000 milliseconds
     s.trigger()
