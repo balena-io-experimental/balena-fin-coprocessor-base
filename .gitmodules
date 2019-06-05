@@ -1,0 +1,4 @@
+[submodule "coprocessor-sdk"]
+	path = coprocessor-sdk
+	url = git@github.com:Bucknalla/coprocessor-sdk.git
+	branch = master
