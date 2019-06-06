@@ -7,8 +7,5 @@
 
 int main(void)
 {
-  balenaInit(); // Include Balena Libraries
+  balenaInit(); // include balena libs
 }
-
-
-
