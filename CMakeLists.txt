@@ -13,8 +13,11 @@
 # Set minimum CMake version
 cmake_minimum_required(VERSION 2.8.4)
 
-# Set efm32-base project location
-set(BASE_LOCATION .)
+# Set library location
+set(BASE_LOCATION ./coprocessor-sdk)
+
+# Set project location
+set(PROJ_LOCATION .)
 
 # Set the compiler (must be prior to project setup)
 include(${BASE_LOCATION}/toolchain/arm-gcc.cmake)
@@ -29,7 +32,7 @@ project(${TARGET} C CXX ASM)
 
 # Set device
 if(NOT DEVICE)
-set(DEVICE EFM32GG990F1024)
+set(DEVICE EFR32BG1B232F256GM48)
 endif()
 
 # Set build
@@ -49,16 +52,17 @@ include(${BASE_LOCATION}/toolchain/main.cmake)
 
 # Add project headers
 include_directories(
-	${BASE_LOCATION}/include/balena
-	${BASE_LOCATION}/include/serial
-	${BASE_LOCATION}/include/config
+	${PROJ_LOCATION}/include
+)
+
+file(GLOB PROJ_SRC
+    ${PROJ_LOCATION}/source/*.cpp
 )
 
 # Add project sources
 set(SOURCES
-	${BASE_LOCATION}/source/main.cpp
-	${BASE_LOCATION}/source/protocol/balena/balena.cpp
-	${BASE_LOCATION}/source/protocol/serial/Serial.cpp
+	${PROJ_LOCATION}/main.cpp
+	${PROJ_SRC}
 )
 
 ##### Outputs #####
@@ -75,3 +79,7 @@ include(${BASE_LOCATION}/toolchain/post-build.cmake)
 # Add JLink commands
 include(${BASE_LOCATION}/toolchain/jlink.cmake)
 
+##### Unit Tests #####
+#include( CTest )
+#enable_testing ()
+#add_subdirectory (${BASE_LOCATION}/tests)
