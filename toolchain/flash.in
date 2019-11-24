@@ -1,5 +1,6 @@
 device ${DEVICE}
 h
+e
 loadbin ${BINARY}, ${FLASH_ORIGIN}
 verifybin ${BINARY}, ${FLASH_ORIGIN}
 r

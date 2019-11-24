@@ -14,7 +14,7 @@ add_library(${PROJECT_NAME} INTERFACE)
 
 target_include_directories(${PROJECT_NAME} INTERFACE
         halconfig/inc/hal-config
-        kit/${CPU_FAMILY_U}_${BOARD}/config
+        kit/${TEMP_BOARD}_${BOARD}/config
         kit/common/bsp
         kit/common/drivers
         kit/common/halconfig

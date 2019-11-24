@@ -4,7 +4,8 @@
 # This file is covered under the MIT license available at: https://opensource.org/licenses/MIT
 
 # Configure flasher script for the project
-set(BINARY ${PROJECT_NAME}.bin)
+set(BINARY ${PROJECT_NAME}.hex)
+set(EXECUTABLE ${PROJECT_NAME}.bin)
 configure_file(${CMAKE_CURRENT_LIST_DIR}/flash.in ${CMAKE_CURRENT_BINARY_DIR}/flash.jlink)
 
 #Add JLink commands

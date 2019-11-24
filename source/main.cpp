@@ -1,10 +1,10 @@
 //EFM32 blink test
 
 #ifndef LED_PIN
-#define LED_PIN     4
+#define LED_PIN     6
 #endif
 #ifndef LED_PORT
-#define LED_PORT    gpioPortA
+#define LED_PORT    gpioPortF
 #endif
 
 #include <stdint.h>
@@ -15,6 +15,8 @@
 #include "em_cmu.h"
 #include "em_emu.h"
 #include "em_gpio.h"
+#include "sleep.h"
+#include "i2cspm.h"
 
 volatile uint32_t msTicks; /* counts 1ms timeTicks */
 
@@ -63,10 +65,7 @@ int main(void)
     /* Infinite blink loop */
     while (1)
     {
-        Delay(1000);
+        Delay(200);
         GPIO_PinOutToggle(LED_PORT, LED_PIN);
     }
 }
-
-
-
