@@ -1,24 +1,26 @@
 /***************************************************************************//**
- * @file rtcdriver.c
+ * @file
  * @brief RTCDRV timer API implementation.
- * @version 5.6.0
  *******************************************************************************
  * # License
- * <b>(C) Copyright 2018 Silicon Labs, www.silabs.com</b>
+ * <b>Copyright 2018 Silicon Laboratories Inc. www.silabs.com</b>
  *******************************************************************************
  *
- * This file is licensed under the Silabs License Agreement. See the file
- * "Silabs_License_Agreement.txt" for details. Before using this software for
- * any purpose, you must agree to the terms of that agreement.
+ * The licensor of this software is Silicon Laboratories Inc.  Your use of this
+ * software is governed by the terms of Silicon Labs Master Software License
+ * Agreement (MSLA) available at
+ * www.silabs.com/about-us/legal/master-software-license-agreement.  This
+ * software is distributed to you in Source Code format and is governed by the
+ * sections of the MSLA applicable to Source Code.
  *
  ******************************************************************************/
 
-#include "em_cmu.h"
-#include "em_common.h"
-#include "em_core.h"
 #include <string.h>
 
 #include "em_device.h"
+#include "em_cmu.h"
+#include "em_common.h"
+#include "em_core.h"
 
 #if defined(RTCC_PRESENT) && (RTCC_COUNT == 1)
 #define RTCDRV_USE_RTCC
@@ -27,7 +29,7 @@
 #endif
 
 #if defined(RTCDRV_USE_RTCC)
-#include <em_rtcc.h>
+#include "em_rtcc.h"
 #else
 #include "em_rtc.h"
 #endif
@@ -114,29 +116,29 @@
 // Assume 32 kHz RTC/RTCC clock, cmuClkDiv_2 prescaler, 16 ticks per millisecond
 #define RTC_DIVIDER                   (cmuClkDiv_2)
 #else
-// Assume 32 kHz RTC/RTCC clock, cmuClkDiv_8 prescaler, 4 ticks per millisecond
-#define RTC_DIVIDER                   (8)
+// Assume 32 kHz RTC/RTCC clock, cmuClkDiv_1 prescaler, 32 ticks per millisecond
+#define RTC_DIVIDER                   (1U)
 #endif
 
 #define RTC_CLOCK                     (32768U)
 #define MSEC_TO_TICKS_DIVIDER         (1000U * RTC_DIVIDER)
-#define MSEC_TO_TICKS_ROUNDING_FACTOR (MSEC_TO_TICKS_DIVIDER / 2)
+#define MSEC_TO_TICKS_ROUNDING_FACTOR (MSEC_TO_TICKS_DIVIDER / 2U)
 #define MSEC_TO_TICKS(ms)             ((((uint64_t)(ms) * RTC_CLOCK)     \
                                         + MSEC_TO_TICKS_ROUNDING_FACTOR) \
                                        / MSEC_TO_TICKS_DIVIDER)
 
-#define TICKS_TO_MSEC_ROUNDING_FACTOR (RTC_CLOCK / 2)
+#define TICKS_TO_MSEC_ROUNDING_FACTOR (RTC_CLOCK / 2U)
 #define TICKS_TO_MSEC(ticks)          ((((uint64_t)(ticks)               \
                                          * RTC_DIVIDER * 1000U)          \
                                         + TICKS_TO_MSEC_ROUNDING_FACTOR) \
                                        / RTC_CLOCK)
 
-#define TICKS_TO_SEC_ROUNDING_FACTOR  (RTC_CLOCK / 2)
+#define TICKS_TO_SEC_ROUNDING_FACTOR  (RTC_CLOCK / 2U)
 #define TICKS_TO_SEC(ticks)           ((((uint64_t)(ticks)              \
                                          * RTC_DIVIDER)                 \
                                         + TICKS_TO_SEC_ROUNDING_FACTOR) \
                                        / RTC_CLOCK)
-#define TICK_TIME_USEC                (1000000 * RTC_DIVIDER / RTC_CLOCK)
+#define TICK_TIME_USEC                (1000000U * RTC_DIVIDER / RTC_CLOCK)
 
 typedef struct Timer{
   uint64_t            remaining;
@@ -181,7 +183,7 @@ static RTCC_Init_TypeDef initRTCC =
   false,                /* Disable updating RTC during debug halt. */
   false,                /* Prescaler counts to maximum before wrapping around. */
   false,                /* Counter counts to maximum before wrapping around. */
-  rtccCntPresc_8,       /* Set RTCC prescaler to 8. */
+  rtccCntPresc_1,       /* Set RTCC prescaler to 1. */
   rtccCntTickPresc,     /* Count according to the prescaler configuration. */
 #if defined(_RTCC_CTRL_BUMODETSEN_MASK)
   false,                /* Disable storing RTCC counter value in RTCC_CCV2 upon backup mode entry. */
@@ -204,6 +206,8 @@ static RTCC_CCChConf_TypeDef initRTCCCompareChannel =
 // Default to LFXO unless configured for LFRCO.
 #if defined(EMDRV_RTCDRV_USE_LFRCO)
   #define RTCDRV_OSC cmuSelect_LFRCO
+#elif defined(EMDRV_RTCDRV_USE_PLFRCO) && defined(PLFRCO_PRESENT)
+  #define RTCDRV_OSC cmuSelect_PLFRCO
 #else
   #define RTCDRV_OSC cmuSelect_LFXO
 #endif
@@ -217,29 +221,7 @@ static void handleOverflow(void);
 #endif
 
 /// @endcond
-CORE_irqState_t CORE_EnterAtomic(void)
-{
-#if (CORE_ATOMIC_METHOD == CORE_ATOMIC_METHOD_BASEPRI)
-  CORE_irqState_t irqState = __get_BASEPRI();
-  __set_BASEPRI(CORE_ATOMIC_BASE_PRIORITY_LEVEL << (8 - __NVIC_PRIO_BITS));
-  return irqState;
-#else
-  CORE_irqState_t irqState = __get_PRIMASK();
-  __disable_irq();
-  return irqState;
-#endif // (CORE_ATOMIC_METHOD == CORE_ATOMIC_METHOD_BASEPRI)
-}
 
-void CORE_ExitAtomic(CORE_irqState_t irqState)
-{
-#if (CORE_ATOMIC_METHOD == CORE_ATOMIC_METHOD_BASEPRI)
-  __set_BASEPRI(irqState);
-#else
-  if (irqState == 0U) {
-    __enable_irq();
-  }
-#endif // (CORE_ATOMIC_METHOD == CORE_ATOMIC_METHOD_BASEPRI)
-}
 /***************************************************************************//**
  * @brief
  *    Allocate timer.
@@ -446,6 +428,9 @@ Ecode_t RTCDRV_Init(void)
 #endif
 
   rtcdrvIsInitialized = true;
+#if defined(_SILICON_LABS_32B_SERIES_2)
+  RTCC_SyncWait();
+#endif
   return ECODE_EMDRV_RTCDRV_OK;
 }
 
@@ -610,7 +595,7 @@ Ecode_t RTCDRV_StartTimer(RTCDRV_TimerID_t id,
     // Calculate compensation value for periodic timers.
     timer[id].periodicCompensationUsec = 1000 * timeout
                                          - (timer[id].ticks * TICK_TIME_USEC);
-    timer[id].periodicDriftUsec = TICK_TIME_USEC / 2;
+    timer[id].periodicDriftUsec = TICK_TIME_USEC / 2U;
   } else {
     // Compensate for the fact that CNT is normally COMP0+1 after a
     // compare match event on some devices.
@@ -1280,9 +1265,10 @@ static void handleOverflow(void)
 // Uncomment the following line to enable integration with the SLEEP driver.
 //#define EMDRV_RTCDRV_SLEEPDRV_INTEGRATION
 
-// Uncomment the following line to let the RTCDRV clock on LFRCO.
+// Uncomment the following line to let the RTCDRV clock on LFRCO or PLFRCO.
 // The default is LFXO.
 //#define EMDRV_RTCDRV_USE_LFRCO
+//#define EMDRV_RTCDRV_USE_PLFRCO
 
 #endif
    @endverbatim

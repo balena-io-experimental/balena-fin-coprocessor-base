@@ -51,10 +51,9 @@ If using a JLink programmer to externally flash:
 
 Sysex-based sub-commands (0x00 - 0x7F) are used for an extended command set.
 
-| type                  | sub-command | first byte       | second byte   | ...            | support             |
-| --------------------- | -------     | ---------------  | ------------- | -------------- | --------------------|
-| string                | 0x71        | char *string ... |               |                |          ✅          |
-| firmware name/version | 0x79        | major version    | minor version | char *name ... |          ✅          |
+When configuring the build, you may want to define (either in `CMakeLists.txt`or using the `-D` flag) the variables `DEVICE`, `FLASH_ORIGIN`, `FLASH_LENGTH`, `RAM_ORIGIN` and `RAM_LENGTH`. If not defined, the build will use the default memory addresses and sizes for the FLASH and RAM regions defined in the Silicon Labs provided linker script for your device (these are usually `0x00000000` and `0x20000000` for flash start and RAM start, respectively).
+
+## Debugging
 
 ### Planned Features
 

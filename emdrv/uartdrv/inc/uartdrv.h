@@ -1,15 +1,17 @@
 /***************************************************************************//**
- * @file uartdrv.h
+ * @file
  * @brief UARTDRV API definition.
- * @version 5.6.0
  *******************************************************************************
  * # License
- * <b>Copyright 2016 Silicon Laboratories, Inc, www.silabs.com</b>
+ * <b>Copyright 2018 Silicon Laboratories Inc. www.silabs.com</b>
  *******************************************************************************
  *
- * This file is licensed under the Silabs License Agreement. See the file
- * "Silabs_License_Agreement.txt" for details. Before using this software for
- * any purpose, you must agree to the terms of that agreement.
+ * The licensor of this software is Silicon Laboratories Inc.  Your use of this
+ * software is governed by the terms of Silicon Labs Master Software License
+ * Agreement (MSLA) available at
+ * www.silabs.com/about-us/legal/master-software-license-agreement.  This
+ * software is distributed to you in Source Code format and is governed by the
+ * sections of the MSLA applicable to Source Code.
  *
  ******************************************************************************/
 
@@ -19,6 +21,7 @@
 #include "em_device.h"
 #include "em_usart.h"
 #include "em_leuart.h"
+#include "em_eusart.h"
 #include "em_gpio.h"
 #include "em_cmu.h"
 #include "ecode.h"
@@ -64,6 +67,9 @@ extern "C" {
 #define UARTDRV_STATUS_RXDATAV  (1 << 7)  ///< Data is available in the receive buffer.
 #define UARTDRV_STATUS_RXFULL   (1 << 8)  ///< The receive buffer is full.
 #define UARTDRV_STATUS_TXIDLE   (1 << 13) ///< The transmitter is idle.
+#if defined(EUART_COUNT) && (EUART_COUNT > 0)
+#define UARTDRV_STATUS_RXIDLE   (1 << 12) ///< The Receiver is idle.
+#endif
 
 typedef uint32_t UARTDRV_Count_t;     ///< A UART transfer count
 typedef uint32_t UARTDRV_Status_t;    ///< A UART status return type. Bitfield of UARTDRV_STATUS_* values.
@@ -96,6 +102,8 @@ typedef enum UARTDRV_UartType{
   uartdrvUartTypeUart = 0,         ///< USART/UART peripheral
 #if defined(LEUART_COUNT) && (LEUART_COUNT > 0)
   uartdrvUartTypeLeuart = 1         ///< LEUART peripheral
+#elif defined(EUART_COUNT) && (EUART_COUNT > 0)
+  uartdrvUartTypeEuart = 2         ///< EUART peripheral
 #endif
 } UARTDRV_UartType_t;
 /// @endcond
@@ -142,7 +150,7 @@ typedef struct {
   volatile uint16_t tail;                  ///< An index of the location to enqueue the next message.
   volatile uint16_t used;                  ///< A number of bytes queued.
   const uint16_t size;                     ///< FIFO size.
-  UARTDRV_Buffer_t fifo[];                 ///< FIFO of queued data.
+  UARTDRV_Buffer_t fifo[1];                ///< FIFO of queued data. Actual size varies.
 } UARTDRV_Buffer_FifoQueue_t;
 
 /// Macros to define FIFO and buffer queues. typedef can't be used becuase the size
@@ -208,7 +216,7 @@ typedef struct {
 typedef UARTDRV_InitUart_t UARTDRV_Init_t;
 /// @endcond
 
-#if defined(LEUART_COUNT) && (LEUART_COUNT > 0)
+#if defined(LEUART_COUNT) && (LEUART_COUNT > 0) && !defined(_SILICON_LABS_32B_SERIES_2)
 /// LEUART driver instance initialization structure.
 /// Contains a number of UARTDRV configuration options.
 /// It is required to initialize a driver instance.
@@ -235,6 +243,34 @@ typedef struct {
 } UARTDRV_InitLeuart_t;
 #endif
 
+#if defined(EUART_COUNT) && (EUART_COUNT > 0)
+/// UART driver instance initialization structure.
+/// Contains a number of UARTDRV configuration options.
+/// It is required to initialize a driver instance.
+/// This structure is passed to @ref UARTDRV_InitEuart() when initializing a UARTDRV
+typedef struct {
+  EUSART_TypeDef              *port;                ///< The peripheral used for EUART
+  bool                        useLowFrequencyMode;  ///< Clock configuration of the EUART
+  uint32_t                    baudRate;             ///< EUART baud rate
+  GPIO_Port_TypeDef           txPort;               ///< Port for UART Tx pin.
+  GPIO_Port_TypeDef           rxPort;               ///< Port for UART Rx pin.
+  uint8_t                     txPin;                ///< Pin number for UART Tx.
+  uint8_t                     rxPin;                ///< Pin number for UART Rx.
+  uint8_t                     uartNum;              ///< EUART instance number.
+  EUSART_Stopbits_TypeDef     stopBits;             ///< Number of stop bits
+  EUSART_Parity_TypeDef       parity;               ///< Parity configuration
+  EUSART_OVS_TypeDef          oversampling;         ///< Oversampling mode.
+  EUSART_MajorityVote_TypeDef mvdis;                ///< Majority Vote Disable for 16x, 8x and 6x oversampling modes.
+  UARTDRV_FlowControlType_t   fcType;               ///< Flow control mode
+  GPIO_Port_TypeDef           ctsPort;              ///< CTS pin port number
+  uint8_t                     ctsPin;               ///< CTS pin number
+  GPIO_Port_TypeDef           rtsPort;              ///< RTS pin port number
+  uint8_t                     rtsPin;               ///< RTS pin number
+  UARTDRV_Buffer_FifoQueue_t  *rxQueue;             ///< Receive operation queue
+  UARTDRV_Buffer_FifoQueue_t  *txQueue;             ///< Transmit operation queue
+} UARTDRV_InitEuart_t;
+#endif
+
 /// A UART driver instance handle data structure.
 /// Allocated by the application using UARTDRV.
 /// Several concurrent driver instances may exist in an application. The application must
@@ -243,11 +279,14 @@ typedef struct UARTDRV_HandleData{
   /// @cond DO_NOT_INCLUDE_WITH_DOXYGEN
   union {
     USART_TypeDef * uart;
-#if defined(LEUART_COUNT) && (LEUART_COUNT > 0)
+#if defined(LEUART_COUNT) && (LEUART_COUNT > 0) && !defined(_SILICON_LABS_32B_SERIES_2)
     LEUART_TypeDef * leuart;
 #endif
+#if defined(EUART_COUNT) && (EUART_COUNT > 0)
+    EUSART_TypeDef * euart;
+#endif
   } peripheral;
-#if defined(_GPIO_USART_ROUTEEN_MASK)
+#if defined(_GPIO_USART_ROUTEEN_MASK) || defined(_GPIO_EUART_ROUTEEN_MASK)
   uint8_t                    uartNum;           // UART instance number
 #endif
   unsigned int               txDmaCh;           // A DMA ch assigned to Tx
@@ -284,11 +323,15 @@ typedef UARTDRV_HandleData_t * UARTDRV_Handle_t;
 Ecode_t UARTDRV_InitUart(UARTDRV_Handle_t handle,
                          const UARTDRV_InitUart_t * initData);
 
-#if defined(LEUART_COUNT) && (LEUART_COUNT > 0)
+#if defined(LEUART_COUNT) && (LEUART_COUNT > 0) && !defined(_SILICON_LABS_32B_SERIES_2)
 Ecode_t UARTDRV_InitLeuart(UARTDRV_Handle_t handle,
                            const UARTDRV_InitLeuart_t * initData);
 #endif
 
+#if defined(EUART_COUNT) && (EUART_COUNT > 0)
+Ecode_t UARTDRV_InitEuart(UARTDRV_Handle_t handle,
+                          const UARTDRV_InitEuart_t * initData);
+#endif
 Ecode_t UARTDRV_DeInit(UARTDRV_Handle_t handle);
 
 UARTDRV_Status_t UARTDRV_GetPeripheralStatus(UARTDRV_Handle_t handle);

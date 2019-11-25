@@ -1,20 +1,24 @@
 /***************************************************************************//**
- * @file nvm3_lock.h
+ * @file
  * @brief NVM3 data access lock API definition
- * @version 5.6.0
  *******************************************************************************
  * # License
- * <b>(C) Copyright 2017 Silicon Labs, www.silabs.com</b>
+ * <b>Copyright 2018 Silicon Laboratories Inc. www.silabs.com</b>
  *******************************************************************************
  *
- * This file is licensed under the Silabs License Agreement. See the file
- * "Silabs_License_Agreement.txt" for details. Before using this software for
- * any purpose, you must agree to the terms of that agreement.
+ * The licensor of this software is Silicon Laboratories Inc.  Your use of this
+ * software is governed by the terms of Silicon Labs Master Software License
+ * Agreement (MSLA) available at
+ * www.silabs.com/about-us/legal/master-software-license-agreement.  This
+ * software is distributed to you in Source Code format and is governed by the
+ * sections of the MSLA applicable to Source Code.
  *
  ******************************************************************************/
 
 #ifndef NVM3_LOCK_H
 #define NVM3_LOCK_H
+
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,15 +34,19 @@ extern "C" {
  * @{
  ******************************************************************************/
 
+extern uint8_t nvm3_ccmBuf[];
+
 /***************************************************************************//**
  * @addtogroup NVM3Lock
  * @brief NVM3 lock module
  * @{
  * @details
- * This module provides the data protection tools for NVM3.
+ * This module provides data protection tools for NVM3.
  *
- * If an application wishes to use other protection tools than those
- * supplied with NVM3, the functions in this module can be substituted.
+ * The functions in this module are the default protection tools for NVM3.
+ * The application can substitute the nvm3_lockBegin and nvm3_lockEnd
+ * functions as long as the NVM3 functions are protected from
+ * being called re-entrant.
  *
  * @note These functions are used by the NVM3 and should not be used by
  * any applications.

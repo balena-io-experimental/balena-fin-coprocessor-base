@@ -1,32 +1,31 @@
 /***************************************************************************//**
- * @file em_msc.c
+ * @file
  * @brief Flash controller (MSC) Peripheral API
- * @version 5.6.0
+ * @version 5.8.0
  *******************************************************************************
  * # License
- * <b>Copyright 2016 Silicon Laboratories, Inc. www.silabs.com</b>
+ * <b>Copyright 2018 Silicon Laboratories Inc. www.silabs.com</b>
  *******************************************************************************
+ *
+ * SPDX-License-Identifier: Zlib
+ *
+ * The licensor of this software is Silicon Laboratories Inc.
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty. In no event will the authors be held liable for any damages
+ * arising from the use of this software.
  *
  * Permission is granted to anyone to use this software for any purpose,
  * including commercial applications, and to alter it and redistribute it
  * freely, subject to the following restrictions:
  *
  * 1. The origin of this software must not be misrepresented; you must not
- *    claim that you wrote the original software.
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation would be
+ *    appreciated but is not required.
  * 2. Altered source versions must be plainly marked as such, and must not be
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
- *
- * DISCLAIMER OF WARRANTY/LIMITATION OF REMEDIES: Silicon Labs has no
- * obligation to support this Software. Silicon Labs is providing the
- * Software "AS IS", with no express or implied warranties of any kind,
- * including, but not limited to, any implied warranties of merchantability
- * or fitness for any particular purpose or warranties against infringement
- * of any proprietary rights of a third party.
- *
- * Silicon Labs will not be liable for any consequential, incidental, or
- * special damages, or any other relief, or for any claim by any third party,
- * arising from your use of this Software.
  *
  ******************************************************************************/
 
@@ -49,7 +48,7 @@
 /** @cond DO_NOT_INCLUDE_WITH_DOXYGEN */
 
 #if defined(__ICCARM__)
-/* Suppress warnings originating from use of EFM_ASSERT() with IAR:
+/* Suppress warnings originating from use of EFM_ASSERT() with IAR Embedded Workbench:
    EFM_ASSERT() is implemented as a local ramfunc */
 #pragma diag_suppress=Ta022
 #endif
@@ -76,7 +75,7 @@
 
 #if defined(_MSC_ECCCTRL_MASK) || defined(_SYSCFG_DMEM0ECCCTRL_MASK)
 #if defined(_SILICON_LABS_32B_SERIES_1_CONFIG_1)
-/* On Series 1 Config 1, EFM32GG11, ECC is supported for RAM0 and RAM1
+/* On Series 1 Config 1 EFM32GG11, ECC is supported for RAM0 and RAM1
    banks (not RAM2). It is necessary to figure out which is biggest to
    calculate the number of DMA descriptors needed. */
 #define ECC_RAM_SIZE_MAX   (SL_MAX(RAM0_MEM_SIZE, RAM1_MEM_SIZE))
@@ -87,28 +86,83 @@
 #define ECC_RAM1_MEM_BASE  (RAM1_MEM_BASE)
 #define ECC_RAM1_MEM_SIZE  (RAM1_MEM_SIZE)
 
-#define ECC_CTRL_REG_ADDR  (&MSC->ECCCTRL)
-#define ECC_RAM0_WRITE_EN  (_MSC_ECCCTRL_RAMECCEWEN_SHIFT)
-#define ECC_RAM0_CHECK_EN  (_MSC_ECCCTRL_RAMECCCHKEN_SHIFT)
-#define ECC_RAM1_WRITE_EN  (_MSC_ECCCTRL_RAM1ECCEWEN_SHIFT)
-#define ECC_RAM1_CHECK_EN  (_MSC_ECCCTRL_RAM1ECCCHKEN_SHIFT)
+#define ECC_CTRL_REG            (MSC->ECCCTRL)
+#define ECC_RAM0_SYNDROMES_INIT (MSC_ECCCTRL_RAMECCEWEN)
+#define ECC_RAM0_CORRECTION_EN  (MSC_ECCCTRL_RAMECCCHKEN)
+#define ECC_RAM1_SYNDROMES_INIT (MSC_ECCCTRL_RAM1ECCEWEN)
+#define ECC_RAM1_CORRECTION_EN  (MSC_ECCCTRL_RAM1ECCCHKEN)
 
-#define ECC_IFC_REG_ADDR   (&MSC->IFC)
+#define ECC_IFC_REG        (MSC->IFC)
 #define ECC_IFC_MASK       (MSC_IFC_RAMERR1B | MSC_IFC_RAMERR2B \
                             | MSC_IFC_RAM1ERR1B | MSC_IFC_RAM1ERR2B)
 
-#elif defined(_SILICON_LABS_32B_SERIES_2_CONFIG_1)
+#define ECC_FAULT_CTRL_REG (MSC->CTRL)
+#define ECC_FAULT_EN       (MSC_CTRL_RAMECCERRFAULTEN)
+
+#elif defined(_SILICON_LABS_GECKO_INTERNAL_SDID_106)
+/* On Series 1 Config 2 EFM32GG12, ECC is supported for RAM0, RAM1 and
+   RAM2 banks. All banks are of equal size. */
+#define ECC_RAM_SIZE_MAX   (RAM0_MEM_SIZE)
+
+#define ECC_RAM0_MEM_BASE  (RAM0_MEM_BASE)
+#define ECC_RAM0_MEM_SIZE  (RAM0_MEM_SIZE)
+
+#define ECC_RAM1_MEM_BASE  (RAM1_MEM_BASE)
+#define ECC_RAM1_MEM_SIZE  (RAM1_MEM_SIZE)
+
+#define ECC_RAM2_MEM_BASE  (RAM2_MEM_BASE)
+#define ECC_RAM2_MEM_SIZE  (RAM2_MEM_SIZE)
+
+#define ECC_CTRL_REG            (MSC->ECCCTRL)
+#define ECC_RAM0_SYNDROMES_INIT (MSC_ECCCTRL_RAMECCEWEN)
+#define ECC_RAM0_CORRECTION_EN  (MSC_ECCCTRL_RAMECCCHKEN)
+#define ECC_RAM1_SYNDROMES_INIT (MSC_ECCCTRL_RAM1ECCEWEN)
+#define ECC_RAM1_CORRECTION_EN  (MSC_ECCCTRL_RAM1ECCCHKEN)
+#define ECC_RAM2_SYNDROMES_INIT (MSC_ECCCTRL_RAM2ECCEWEN)
+#define ECC_RAM2_CORRECTION_EN  (MSC_ECCCTRL_RAM2ECCCHKEN)
+
+#define ECC_IFC_REG        (MSC->IFC)
+#define ECC_IFC_MASK       (MSC_IFC_RAMERR1B | MSC_IFC_RAMERR2B     \
+                            | MSC_IFC_RAM1ERR1B | MSC_IFC_RAM1ERR2B \
+                            | MSC_IFC_RAM2ERR1B | MSC_IFC_RAM2ERR2B)
+
+#define ECC_FAULT_CTRL_REG (MSC->CTRL)
+#define ECC_FAULT_EN       (MSC_CTRL_RAMECCERRFAULTEN)
+
+#elif defined(_SILICON_LABS_32B_SERIES_2)
+
+#if defined(_SILICON_LABS_32B_SERIES_2_CONFIG_1)
 
 /* On Series 2 Config 1, aka EFR32XG21, ECC is supported for the
    main DMEM RAM banks which is controlled with one ECC encoder/decoder. */
+#define ECC_RAM0_SYNDROMES_INIT (SYSCFG_DMEM0ECCCTRL_RAMECCEWEN)
+#define ECC_RAM0_CORRECTION_EN  (SYSCFG_DMEM0ECCCTRL_RAMECCCHKEN)
+
+#elif defined(_SILICON_LABS_32B_SERIES_2_CONFIG_2)
+
+/* On Series 2 Config 2, aka EFR32XG22, ECC is supported for the
+   main DMEM RAM banks which is controlled with one ECC encoder/decoder. */
+#define ECC_RAM0_SYNDROMES_INIT (SYSCFG_DMEM0ECCCTRL_RAMECCEN)
+#define ECC_RAM0_CORRECTION_EN  (SYSCFG_DMEM0ECCCTRL_RAMECCEWEN)
+
+#define ECC_IF_REG         (SYSCFG->IF)
+#define ECC_IF_1BIT_ERROR  (SYSCFG_IF_RAMERR1B)
+
+#else
+
+#error "Unknown device"
+
+#endif /* #if defined(if defined(_SILICON_LABS_32B_SERIES_2_CONFIG_1) */
+
 #define ECC_RAM_SIZE_MAX   (RAM_MEM_SIZE)
 #define ECC_RAM0_MEM_BASE  (RAM_MEM_BASE)
 #define ECC_RAM0_MEM_SIZE  (RAM_MEM_SIZE)
-#define ECC_CTRL_REG_ADDR  (&SYSCFG->DMEM0ECCCTRL)
-#define ECC_RAM0_WRITE_EN  (_SYSCFG_DMEM0ECCCTRL_RAMECCEWEN_SHIFT)
-#define ECC_RAM0_CHECK_EN  (_SYSCFG_DMEM0ECCCTRL_RAMECCCHKEN_SHIFT)
-#define ECC_IFC_REG_ADDR   (&SYSCFG->IF_CLR)
+
+#define ECC_CTRL_REG       (SYSCFG->DMEM0ECCCTRL)
+#define ECC_IFC_REG        (SYSCFG->IF_CLR)
 #define ECC_IFC_MASK       (SYSCFG_IF_RAMERR1B | SYSCFG_IF_RAMERR2B)
+#define ECC_FAULT_CTRL_REG (SYSCFG->CTRL)
+#define ECC_FAULT_EN       (SYSCFG_CTRL_RAMECCERRFAULTEN)
 
 #else
 
@@ -149,29 +203,35 @@ typedef enum {
 
 #if defined(_MSC_ECCCTRL_MASK) || defined(_SYSCFG_DMEM0ECCCTRL_MASK)
 typedef struct {
-  volatile uint32_t *ctrlReg;
-  uint32_t           writeEnBit;
-  uint32_t           checkEnBit;
-  volatile uint32_t *ifClearReg;
-  uint32_t           ifClearMask;
+  uint32_t           initSyndromeEnable;
+  uint32_t           correctionEnable;
   uint32_t           base;
   uint32_t           size;
 } MSC_EccBank_Typedef;
+
 #endif
 
 /*******************************************************************************
  ******************************      LOCALS      *******************************
  ******************************************************************************/
 #if defined(_MSC_ECCCTRL_MASK) || defined(_SYSCFG_DMEM0ECCCTRL_MASK)
-static const MSC_EccBank_Typedef eccBank[MSC_ECC_BANKS] =
+static const MSC_EccBank_Typedef eccBankTbl[MSC_ECC_BANKS] =
 {
-  { ECC_CTRL_REG_ADDR, ECC_RAM0_WRITE_EN, ECC_RAM0_CHECK_EN,
-    ECC_IFC_REG_ADDR, ECC_IFC_MASK,
-    ECC_RAM0_MEM_BASE, ECC_RAM0_MEM_SIZE },
+  {
+    ECC_RAM0_SYNDROMES_INIT, ECC_RAM0_CORRECTION_EN,
+    ECC_RAM0_MEM_BASE, ECC_RAM0_MEM_SIZE
+  },
 #if MSC_ECC_BANKS > 1
-  { ECC_CTRL_REG_ADDR, ECC_RAM1_WRITE_EN, ECC_RAM1_CHECK_EN,
-    ECC_IFC_REG_ADDR, ECC_IFC_MASK,
-    ECC_RAM1_MEM_BASE, ECC_RAM1_MEM_SIZE },
+  {
+    ECC_RAM1_SYNDROMES_INIT, ECC_RAM1_CORRECTION_EN,
+    ECC_RAM1_MEM_BASE, ECC_RAM1_MEM_SIZE
+  },
+#if MSC_ECC_BANKS > 2
+  {
+    ECC_RAM2_SYNDROMES_INIT, ECC_RAM2_CORRECTION_EN,
+    ECC_RAM2_MEM_BASE, ECC_RAM2_MEM_SIZE
+  },
+#endif
 #endif
 };
 #endif
@@ -345,7 +405,12 @@ msc_Return_TypeDef writeBurst(uint32_t address,
   }
 
   MSC->WRITECMD = MSC_WRITECMD_WRITEEND;
-  return mscStatusWait(MSC_STATUS_BUSY, 0);
+  if ((retVal = mscStatusWait((MSC_STATUS_BUSY | MSC_STATUS_PENDING), 0))
+      == mscReturnOk) {
+    // We need to check twice to be sure
+    retVal = mscStatusWait((MSC_STATUS_BUSY | MSC_STATUS_PENDING), 0);
+  }
+  return retVal;
 }
 MSC_RAMFUNC_DEFINITION_END
 
@@ -357,6 +422,9 @@ MSC_RAMFUNC_DEFINITION_END
  ******************************************************************************/
 void MSC_Init(void)
 {
+#if defined(_CMU_CLKEN1_MASK)
+  CMU->CLKEN1_SET = CMU_CLKEN1_MSC;
+#endif
   // Unlock MSC
   MSC->LOCK = MSC_LOCK_LOCKKEY_UNLOCK;
   // Disable flash write
@@ -375,6 +443,9 @@ void MSC_Deinit(void)
   MSC->WRITECTRL_CLR = MSC_WRITECTRL_WREN;
   // Lock MSC
   MSC->LOCK = MSC_LOCK_LOCKKEY_LOCK;
+#if defined(_CMU_CLKEN1_MASK)
+  CMU->CLKEN1_CLR = CMU_CLKEN1_MSC;
+#endif
 }
 
 /***************************************************************************//**
@@ -400,10 +471,8 @@ void MSC_ExecConfigSet(MSC_ExecConfig_TypeDef *execConfig)
 /***************************************************************************//**
  * @brief
  *   Erases a page in flash memory.
- * @note
- *   It is recommended to run this code from RAM.
  *
- *   For IAR, Rowley, SimplicityStudio, Atollic and armgcc this will be achieved
+ *   For IAR Embedded Workbench, Simplicity Studio and GCC this will be achieved
  *   automatically by using attributes in the function proctype. For Keil
  *   uVision you must define a section called "ram_code" and place this manually
  *   in your project's scatter file.
@@ -425,19 +494,27 @@ MSC_RAMFUNC_DEFINITION_BEGIN
 MSC_Status_TypeDef MSC_ErasePage(uint32_t *startAddress)
 {
   MSC_Status_TypeDef retVal;
+  bool wasLocked;
 
   // Address must be aligned to page boundary
   EFM_ASSERT((((uint32_t)startAddress) & (FLASH_PAGE_SIZE - 1U)) == 0);
 
-  if (MSC_IS_LOCKED()) {
-    return mscReturnLocked;
-  }
+  wasLocked = MSC_IS_LOCKED();
+  MSC->LOCK = MSC_LOCK_LOCKKEY_UNLOCK;
 
   MSC->WRITECTRL_SET = MSC_WRITECTRL_WREN;
   MSC->ADDRB         = (uint32_t)startAddress;
   MSC->WRITECMD      = MSC_WRITECMD_ERASEPAGE;
-  retVal             = mscStatusWait(MSC_STATUS_BUSY, 0);
+  if ((retVal = mscStatusWait((MSC_STATUS_BUSY | MSC_STATUS_PENDING), 0))
+      == mscReturnOk) {
+    // We need to check twice to be sure
+    retVal = mscStatusWait((MSC_STATUS_BUSY | MSC_STATUS_PENDING), 0);
+  }
   MSC->WRITECTRL_CLR = MSC_WRITECTRL_WREN;
+
+  if (wasLocked) {
+    MSC->LOCK = MSC_LOCK_LOCKKEY_LOCK;
+  }
 
   return retVal;
 }
@@ -450,9 +527,7 @@ MSC_RAMFUNC_DEFINITION_END
  * @note
  *   It is recommended to erase the flash page before performing a write.
  *
- *   It is recommended to run this code from RAM.
- *
- *   For IAR, Rowley, SimplicityStudio, Atollic and armgcc this will be achieved
+ *   For IAR Embedded Workbench, Simplicity Studio and GCC this will be achieved
  *   automatically by using attributes in the function proctype. For Keil
  *   uVision you must define a section called "ram_code" and place this manually
  *   in your project's scatter file.
@@ -482,15 +557,15 @@ MSC_Status_TypeDef MSC_WriteWord(uint32_t *address,
   uint8_t  *pData;
   uint32_t burstLen;
   MSC_Status_TypeDef retVal = mscReturnOk;
+  bool wasLocked;
 
   // Check alignment (must be aligned to words)
   EFM_ASSERT(((uint32_t)address & 0x3U) == 0);
   // Check number of bytes, must be divisable by four
   EFM_ASSERT((numBytes & 0x3U) == 0);
 
-  if (MSC_IS_LOCKED()) {
-    return mscReturnLocked;
-  }
+  wasLocked = MSC_IS_LOCKED();
+  MSC->LOCK = MSC_LOCK_LOCKKEY_UNLOCK;
 
   // Enable flash write
   MSC->WRITECTRL_SET = MSC_WRITECTRL_WREN;
@@ -515,6 +590,10 @@ MSC_Status_TypeDef MSC_WriteWord(uint32_t *address,
 
   // Disable flash write
   MSC->WRITECTRL_CLR = MSC_WRITECTRL_WREN;
+
+  if (wasLocked) {
+    MSC->LOCK = MSC_LOCK_LOCKKEY_LOCK;
+  }
 
   return retVal;
 }
@@ -776,6 +855,7 @@ MSC_Status_TypeDef MSC_LoadWriteData(uint32_t* data,
       if (timeOut == 0) {
         return mscReturnTimeOut;
       }
+
       /* Clear the double word option to write the initial single word. */
       MSC->WRITECTRL &= ~MSC_WRITECTRL_WDOUBLE;
       /* Write first data word. */
@@ -979,11 +1059,11 @@ MSC_Status_TypeDef MSC_WriteWordI(uint32_t *address,
   uint32_t numWords;
   uint32_t pageWords;
   uint32_t* pData;
+  bool wasLocked;
   MSC_Status_TypeDef retval = mscReturnOk;
 
-  if (MSC_IS_LOCKED()) {
-    return mscReturnLocked;
-  }
+  wasLocked = MSC_IS_LOCKED();
+  MSC->LOCK = MSC_LOCK_LOCKKEY_UNLOCK;
 
   /* Check alignment (must be aligned to words). */
   EFM_ASSERT(((uint32_t) address & 0x3) == 0);
@@ -1012,6 +1092,11 @@ MSC_Status_TypeDef MSC_WriteWordI(uint32_t *address,
        Therefore, the address phase is only needed once for each page. */
     retval = MSC_LoadVerifyAddress(address + wordCount);
     if (mscReturnOk != retval) {
+      /* Disable writing to the MSC module. */
+      MSC->WRITECTRL &= ~MSC_WRITECTRL_WREN;
+      if (wasLocked) {
+        MSC->LOCK = MSC_LOCK_LOCKKEY_LOCK;
+      }
       return retval;
     }
     /* Compute the number of words to write to the current page. */
@@ -1056,7 +1141,9 @@ MSC_Status_TypeDef MSC_WriteWordI(uint32_t *address,
   MSC->WRITECTRL &= ~MSC_WRITECTRL_WDOUBLE;
 #endif
 #endif
-
+  if (wasLocked) {
+    MSC->LOCK = MSC_LOCK_LOCKKEY_LOCK;
+  }
   return retval;
 }
 MSC_RAMFUNC_DEFINITION_END
@@ -1067,10 +1154,9 @@ MSC_RAMFUNC_DEFINITION_END
  * @brief
  *   Erases a page in flash memory.
  * @note
- *   It is recommended to run this code from RAM. On the Gecko family, it is required
- *   to run this function from RAM.
+ *   For the Gecko family, it is required to run this function from RAM.
  *
- *   For IAR IDE, Rowley IDE, SimplicityStudio IDE, Atollic IDE, and ARM GCC IDE, this is
+ *   For IAR Embedded Workbench, Simplicity Studio and GCC, this is
  *   achieved automatically by using attributes in the function proctype. For Keil
  *   uVision IDE, define a section called "ram_code" and place this manually in
  *   the project's scatter file.
@@ -1092,10 +1178,10 @@ MSC_RAMFUNC_DEFINITION_BEGIN
 MSC_Status_TypeDef MSC_ErasePage(uint32_t *startAddress)
 {
   uint32_t timeOut = MSC_PROGRAM_TIMEOUT;
+  bool wasLocked;
 
-  if (MSC_IS_LOCKED()) {
-    return mscReturnLocked;
-  }
+  wasLocked = MSC_IS_LOCKED();
+  MSC->LOCK = MSC_LOCK_LOCKKEY_UNLOCK;
 
   /* An address must be aligned to pages. */
   EFM_ASSERT((((uint32_t) startAddress) & (FLASH_PAGE_SIZE - 1)) == 0);
@@ -1114,8 +1200,11 @@ MSC_Status_TypeDef MSC_ErasePage(uint32_t *startAddress)
 
   /* Check for an invalid address. */
   if (MSC->STATUS & MSC_STATUS_INVADDR) {
-    /* Disable writing to the MSC */
+    /* Disable writing to the MSC module. */
     MSC->WRITECTRL &= ~MSC_WRITECTRL_WREN;
+    if (wasLocked) {
+      MSC->LOCK = MSC_LOCK_LOCKKEY_LOCK;
+    }
     return mscReturnInvalidAddr;
   }
 
@@ -1130,15 +1219,24 @@ MSC_Status_TypeDef MSC_ErasePage(uint32_t *startAddress)
   if (MSC->STATUS & MSC_STATUS_LOCKED) {
     /* Disable writing to the MSC module. */
     MSC->WRITECTRL &= ~MSC_WRITECTRL_WREN;
+    if (wasLocked) {
+      MSC->LOCK = MSC_LOCK_LOCKKEY_LOCK;
+    }
     return mscReturnLocked;
   }
   if (timeOut == 0) {
     /* Disable writing to the MSC module. */
     MSC->WRITECTRL &= ~MSC_WRITECTRL_WREN;
+    if (wasLocked) {
+      MSC->LOCK = MSC_LOCK_LOCKKEY_LOCK;
+    }
     return mscReturnTimeOut;
   }
   /* Disable writing to the MSC module. */
   MSC->WRITECTRL &= ~MSC_WRITECTRL_WREN;
+  if (wasLocked) {
+    MSC->LOCK = MSC_LOCK_LOCKKEY_LOCK;
+  }
   return mscReturnOk;
 }
 MSC_RAMFUNC_DEFINITION_END
@@ -1152,10 +1250,9 @@ MSC_RAMFUNC_DEFINITION_END
  * @note
  *   It is recommended to erase the flash page before performing a write.
  *
- *   It is recommended to run this code from RAM. On the Gecko family, it is required
- *   to run this function from RAM.
+ *   For the Gecko family, it is required to run this function from RAM.
  *
- *   For IAR IDE, Rowley IDE, SimplicityStudio IDE, Atollic IDE, and ARM GCC IDE,
+ *   For IAR Embedded Workbench, Simplicity Studio and GCC,
  *   this is done automatically by using attributes in the function proctype.
  *   For Keil uVision IDE, define a section called "ram_code" and place it
  *   manually in the project's scatter file.
@@ -1189,17 +1286,20 @@ MSC_Status_TypeDef MSC_WriteWord(uint32_t *address,
 MSC_RAMFUNC_DEFINITION_END
 
 #if !defined(_EFM32_GECKO_FAMILY)
+#if !defined (EM_MSC_RUN_FROM_FLASH) || (_SILICON_LABS_GECKO_INTERNAL_SDID < 84)
 /***************************************************************************//**
  * @brief
  *   Writes data to flash memory. This function is faster than MSC_WriteWord(),
  *   but it disables interrupts. Write data must be aligned to words and contain
  *   a number of bytes that is divisible by four.
+ * @warning
+ *   This function is only available for certain devices.
  * @note
  *   It is recommended to erase the flash page before performing a write.
  *   It is required to run this function from RAM on parts that include a
  *   flash write buffer.
  *
- *   For IAR IDE, Rowley IDE, SimplicityStudio IDE, Atollic IDE, and ARM GCC IDE,
+ *   For IAR Embedded Workbench, Simplicity Studio and GCC,
  *   this is done automatically by using attributes in the function proctype.
  *   For Keil uVision IDE, define a section called "ram_code" and place this manually
  *   in the project's scatter file.
@@ -1221,7 +1321,6 @@ MSC_RAMFUNC_DEFINITION_END
  *       the next word into the DWORD register.
  * @endverbatim
  ******************************************************************************/
-#if !defined (EM_MSC_RUN_FROM_FLASH) || (_SILICON_LABS_GECKO_INTERNAL_SDID < 84)
 MSC_RAMFUNC_DEFINITION_BEGIN
 MSC_Status_TypeDef MSC_WriteWordFast(uint32_t *address,
                                      void const *data,
@@ -1247,9 +1346,9 @@ MSC_RAMFUNC_DEFINITION_END
 MSC_RAMFUNC_DEFINITION_BEGIN
 MSC_Status_TypeDef MSC_MassErase(void)
 {
-  if (MSC_IS_LOCKED()) {
-    return mscReturnLocked;
-  }
+  bool wasLocked;
+  wasLocked = MSC_IS_LOCKED();
+  MSC->LOCK = MSC_LOCK_LOCKKEY_UNLOCK;
 
   /* Enable writing to the MSC module. */
   MSC->WRITECTRL |= MSC_WRITECTRL_WREN;
@@ -1279,6 +1378,10 @@ MSC_Status_TypeDef MSC_MassErase(void)
   /* Disable writing to the MSC module. */
   MSC->WRITECTRL &= ~MSC_WRITECTRL_WREN;
 
+  if (wasLocked) {
+    MSC->LOCK = MSC_LOCK_LOCKKEY_LOCK;
+  }
+
   /* This will only successfully return if calling function is also in SRAM. */
   return mscReturnOk;
 }
@@ -1288,6 +1391,52 @@ MSC_RAMFUNC_DEFINITION_END
 #endif // defined(_SILICON_LABS_32B_SERIES_2)
 
 #if defined(_MSC_ECCCTRL_MASK) || defined(_SYSCFG_DMEM0ECCCTRL_MASK)
+
+#if defined(_SILICON_LABS_32B_SERIES_2_CONFIG_2)
+
+/***************************************************************************//**
+ * @brief
+ *    Read and write existing values in RAM (for ECC initializaion).
+ *
+ * @details
+ *    This function uses core to load and store the existing data
+ *    values in the given RAM bank.
+ *
+ * @param[in] eccBank
+ *    Pointer to ECC RAM bank (MSC_EccBank_Typedef)
+ ******************************************************************************/
+static void mscEccReadWriteExistingPio(const MSC_EccBank_Typedef *eccBank)
+{
+  volatile uint32_t *ramptr = (volatile uint32_t *) eccBank->base;
+  const uint32_t *endptr = (const uint32_t *) (eccBank->base + eccBank->size);
+  uint32_t val32;
+  uint32_t ctrlReg = ECC_CTRL_REG;
+
+  // Make sure ECC bit error interrupt event bits are cleared.
+  ECC_IFC_REG = ECC_IFC_MASK;
+
+  // Loop through all 32-bit words in RAM block.
+  for (; ramptr < endptr; ramptr++) {
+    // Read value from RAM
+    val32 = *ramptr;
+    if (ECC_IF_REG & ECC_IF_1BIT_ERROR) {
+      /* 1-bit error occurred. The read value is incorrect since the ECC logic
+         has modified it. Disable ECC, re-read correct value from RAM,
+         re-enable ECC, and finally write value which will also initialize the
+         corresponding ECC syndrome. */
+      ctrlReg &= ~eccBank->initSyndromeEnable;
+      ECC_CTRL_REG = ctrlReg;
+      val32 = *ramptr;
+      // Re-enable ECC
+      ctrlReg |= eccBank->initSyndromeEnable;
+      ECC_CTRL_REG = ctrlReg;
+      ECC_IFC_REG = ECC_IFC_MASK;
+    }
+    *ramptr = val32;
+  }
+}
+
+#else // #if defined(_SILICON_LABS_32B_SERIES_2_CONFIG_2)
 
 /***************************************************************************//**
  * @brief
@@ -1395,7 +1544,12 @@ static void mscEccReadWriteExistingDma(uint32_t start,
   LDMA->LINKLOAD = chMask;
 
   /* Wait until finished. */
-  while (!(((LDMA->CHEN & chMask) == 0)
+  while (!(
+#if defined(_LDMA_CHSTATUS_MASK)
+           ((LDMA->CHSTATUS & chMask) == 0)
+#else
+           ((LDMA->CHEN & chMask) == 0)
+#endif
            && ((LDMA->CHDONE & chMask) == chMask))) {
   }
 
@@ -1404,6 +1558,8 @@ static void mscEccReadWriteExistingDma(uint32_t start,
   CMU_ClockEnable(cmuClock_LDMA, false);
 #endif
 }
+
+#endif // #if defined(_SILICON_LABS_32B_SERIES_2_CONFIG_2)
 
 /***************************************************************************//**
  * @brief
@@ -1430,21 +1586,28 @@ static void mscEccBankInit(const MSC_EccBank_Typedef *eccBank,
   CORE_ENTER_CRITICAL();
 
   /* Enable ECC write. Keep ECC checking disabled during initialization. */
-  ctrlReg  = *eccBank->ctrlReg;
-  ctrlReg |= 1 << eccBank->writeEnBit;
-  *eccBank->ctrlReg = ctrlReg;
+  ctrlReg  = ECC_CTRL_REG;
+  ctrlReg |= eccBank->initSyndromeEnable;
+  ECC_CTRL_REG = ctrlReg;
 
+#if defined(_SILICON_LABS_32B_SERIES_2_CONFIG_2)
+  (void) dmaChannels;
+  /* Initialize ECC syndromes by using core cpu to load and store the existing
+     data values in RAM. */
+  mscEccReadWriteExistingPio(eccBank);
+#else
   /* Initialize ECC syndromes by using DMA to read and write the existing
      data values in RAM. */
   mscEccReadWriteExistingDma(eccBank->base, eccBank->size, dmaChannels);
+#endif
 
   /* Clear any ECC errors that may have been reported before or during
      initialization. */
-  *eccBank->ifClearReg = eccBank->ifClearMask;
+  ECC_IFC_REG = ECC_IFC_MASK;
 
   /* Enable ECC decoder to detect and report ECC errors. */
-  ctrlReg |= 1 << eccBank->checkEnBit;
-  *eccBank->ctrlReg = ctrlReg;
+  ctrlReg |= eccBank->correctionEnable;
+  ECC_CTRL_REG = ctrlReg;
 
   CORE_EXIT_CRITICAL();
 }
@@ -1464,7 +1627,7 @@ static void mscEccBankInit(const MSC_EccBank_Typedef *eccBank,
 static void mscEccBankDisable(const MSC_EccBank_Typedef *eccBank)
 {
   /* Disable ECC write (encoder) and checking (decoder). */
-  *eccBank->ctrlReg &= ~((1 << eccBank->writeEnBit) | (1 << eccBank->checkEnBit));
+  ECC_CTRL_REG &= ~(eccBank->initSyndromeEnable | eccBank->correctionEnable);
 }
 
 /***************************************************************************//**
@@ -1501,21 +1664,29 @@ static void mscEccBankDisable(const MSC_EccBank_Typedef *eccBank)
 void MSC_EccConfigSet(MSC_EccConfig_TypeDef *eccConfig)
 {
   unsigned int cnt;
-
-#if defined(_SILICON_LABS_32B_SERIES_1_CONFIG_1)
-  /* On Series 1 Config 1, aka EFM32GG11, disable ECC fault enable. */
-  MSC->CTRL &= ~MSC_CTRL_RAMECCERRFAULTEN;
+#if defined(ECC_FAULT_CTRL_REG)
+  uint32_t faultCtrlReg = ECC_FAULT_CTRL_REG;
+  /* Disable ECC faults if ecc fault ctrl register is defined. */
+  faultCtrlReg &= ~ECC_FAULT_EN;
+  ECC_FAULT_CTRL_REG = faultCtrlReg;
 #endif
 
   /* Loop through the ECC banks array, enable or disable according to
      the eccConfig->enableEccBank array. */
   for (cnt = 0; cnt < MSC_ECC_BANKS; cnt++) {
     if (eccConfig->enableEccBank[cnt]) {
-      mscEccBankInit(&eccBank[cnt], eccConfig->dmaChannels);
+      mscEccBankInit(&eccBankTbl[cnt], eccConfig->dmaChannels);
     } else {
-      mscEccBankDisable(&eccBank[cnt]);
+      mscEccBankDisable(&eccBankTbl[cnt]);
     }
   }
+
+#if defined(ECC_FAULT_CTRL_REG) && !defined(_SILICON_LABS_32B_SERIES_1_CONFIG_1)
+  /* Enable ECC faults if ecc fault ctrl register is set.
+     On Series 1 Config 1, aka EFM32GG11, ECC faults should stay disabled. */
+  faultCtrlReg |= ECC_FAULT_EN;
+  ECC_FAULT_CTRL_REG = faultCtrlReg;
+#endif
 }
 
 #endif /* #if defined(_MSC_ECCCTRL_MASK) */

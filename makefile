@@ -3,9 +3,9 @@
 # Copyright (c) 2016 Ryan Kurte
 # This file is covered under the MIT license available at: https://opensource.org/licenses/MIT
 
-.PHONY: setup balena efm32g efm32bg efm32gg efm32zg efm32wg efm32lg efm32tg efm32hg ezr32lg ezr32wg efm32pg efr32fg
+.PHONY: setup efm32g efm32gg efm32zg efm32wg efm32lg efm32tg efm32hg ezr32lg ezr32wg efm32pg efr32fg bgm13
 
-test: setup balena efm32g efm32bg efm32gg efm32zg efm32wg efm32lg efm32tg efm32hg ezr32lg ezr32wg efm32pg efr32fg 
+test: setup efm32g efm32gg efm32zg efm32wg efm32lg efm32tg efm32hg ezr32lg ezr32wg efm32pg efr32fg bgm13
 
 setup:
 	mkdir -p builds
@@ -67,6 +67,16 @@ efr32fg:
 #EFR32MG Family
 efr32mg:
 	cd builds; rm -rf $@; mkdir $@; cd $@; cmake -DDEVICE=EFR32MG12P332F1024GL125 ../..; make;
+
+#BGM13 Family
+bgm13:
+	cd builds; rm -rf $@; mkdir $@; cd $@; cmake -DDEVICE=BGM13P22F512GA ../..; make;
+
+bgm1:
+	cd builds; rm -rf $@; mkdir $@; cd $@; cmake -DDEVICE=BGM111A256V2 -DBOARD=BGM11_BRD4300A ../..; make;
+#BGM13 Family
+dev:
+	cd builds; rm -rf $@; mkdir $@; cd $@; cmake -DDEVICE=EFR32BG1B232F256GM48 -DBOARD=BRD4100A ../..; make;
 
 clean:
 	rm -rf builds

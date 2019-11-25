@@ -1,15 +1,17 @@
 /***************************************************************************//**
- * @file dmadrv.h
+ * @file
  * @brief DMADRV API definition.
- * @version 5.6.0
  *******************************************************************************
  * # License
- * <b>(C) Copyright 2014 Silicon Labs, www.silabs.com</b>
+ * <b>Copyright 2018 Silicon Laboratories Inc. www.silabs.com</b>
  *******************************************************************************
  *
- * This file is licensed under the Silabs License Agreement. See the file
- * "Silabs_License_Agreement.txt" for details. Before using this software for
- * any purpose, you must agree to the terms of that agreement.
+ * The licensor of this software is Silicon Laboratories Inc.  Your use of this
+ * software is governed by the terms of Silicon Labs Master Software License
+ * Agreement (MSLA) available at
+ * www.silabs.com/about-us/legal/master-software-license-agreement.  This
+ * software is distributed to you in Source Code format and is governed by the
+ * sections of the MSLA applicable to Source Code.
  *
  ******************************************************************************/
 
@@ -456,6 +458,12 @@ typedef enum {
   #if defined LDMAXBAR_CH_REQSEL_SIGSEL_TIMER3UFOF
   dmadrvPeripheralSignal_TIMER3_UFOF = LDMAXBAR_CH_REQSEL_SIGSEL_TIMER3UFOF | LDMAXBAR_CH_REQSEL_SOURCESEL_TIMER3,
   #endif
+#if defined LDMAXBAR_CH_REQSEL_SIGSEL_EUART0TXFL
+  dmadrvPeripheralSignal_EUART0_TXBL = LDMAXBAR_CH_REQSEL_SIGSEL_EUART0TXFL | LDMAXBAR_CH_REQSEL_SOURCESEL_EUART0,          ///< Trig on EUART0_TXBL.
+#endif
+#if defined LDMAXBAR_CH_REQSEL_SIGSEL_EUART0RXFL
+  dmadrvPeripheralSignal_EUART0_RXDATAV = LDMAXBAR_CH_REQSEL_SIGSEL_EUART0RXFL | LDMAXBAR_CH_REQSEL_SOURCESEL_EUART0,       ///< Trig on EUART0_RXBL.
+#endif
 } DMADRV_PeripheralSignal_t;
 
 #else

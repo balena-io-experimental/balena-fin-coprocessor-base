@@ -1,18 +1,37 @@
-/* Linker script for Silicon Labs EFM32TG devices                      */
-/*                                                                     */
-/* This file is subject to the license terms as defined in ARM's       */
-/* CMSIS END USER LICENSE AGREEMENT.pdf, governing the use of          */
-/* Example Code.                                                       */
-/*                                                                     */
-/* Copyright 2017 Silicon Laboratories, Inc. http://www.silabs.com     */
-/*                                                                     */
-/* Version 5.2.1 */
-/*                                                                     */
+/***************************************************************************//**
+ * Linker script for Silicon Labs EFM32TG devices
+ * @version 5.8.0
+ *******************************************************************************
+ * # License
+ * <b>Copyright 2019 Silicon Laboratories Inc. www.silabs.com</b>
+ *******************************************************************************
+ *
+ * SPDX-License-Identifier: Zlib
+ *
+ * The licensor of this software is Silicon Laboratories Inc.
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty. In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation would be
+ *    appreciated but is not required.
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ *    misrepresented as being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
+ *
+ ******************************************************************************/
 
 MEMORY
 {
-  FLASH (rx) : ORIGIN = 0x00000000, LENGTH = 32768
-  RAM (rwx)  : ORIGIN = 0x20000000, LENGTH = 4096
+  FLASH (rx) : ORIGIN = DEFINED(flash_origin) ? flash_origin : 0x00000000, LENGTH = DEFINED(flash_length) ? flash_length : 32768
+  RAM (rwx)  : ORIGIN = DEFINED(ram_origin) ? ram_origin : 0x20000000, LENGTH = DEFINED(ram_length) ? ram_length : 4096
 }
 
 /* Linker script to place sections and symbol values. Should be used together
@@ -40,6 +59,7 @@ MEMORY
  *   __bss_end__
  *   __end__
  *   end
+ *   __HeapBase
  *   __HeapLimit
  *   __StackLimit
  *   __StackTop
@@ -136,7 +156,9 @@ SECTIONS
     *(vtable)
     *(.data*)
     . = ALIGN (4);
+    PROVIDE (__ram_func_section_start = .);
     *(.ram)
+    PROVIDE (__ram_func_section_end = .);
 
     . = ALIGN(4);
     /* preinit data */
@@ -203,5 +225,5 @@ SECTIONS
   ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")
 
   /* Check if FLASH usage exceeds FLASH size */
-  ASSERT( LENGTH(FLASH) >= (__etext + SIZEOF(.data)), "FLASH memory overflowed !")
+  ASSERT( LENGTH(FLASH) >= (__etext - ORIGIN(FLASH) + SIZEOF(.data)), "FLASH memory overflowed !")
 }

@@ -13,7 +13,9 @@
 # Set minimum CMake version
 cmake_minimum_required(VERSION 2.8.4)
 
-# Set efm32-base project location
+# Optional verbose mode, uncomment or pass in -DCMAKE_VERBOSE_MAKEFILE=ON
+set(CMAKE_VERBOSE_MAKEFILE ON)
+
 set(BASE_LOCATION .)
 
 # Set the compiler (must be prior to project setup)
@@ -21,29 +23,40 @@ include(${BASE_LOCATION}/toolchain/arm-gcc.cmake)
 
 ##### Project Setup #####
 
-# Set our output target
-set(TARGET firmata)
-
 # Configure project and languages
-project(${TARGET} C CXX ASM)
+project(balena-sdk C CXX ASM)
 
 # Set device
-if(NOT DEVICE)
-set(DEVICE EFM32GG990F1024)
-endif()
+if (NOT DEVICE)
+    set(DEVICE EFM32G210F128)
+    # set(DEVICE BGM13P22F512GA)
+    # set(BOARD BRD4306A)
+    # set(BLE_LIB EFR32BG13P)
+endif ()
 
 # Set build
-if(NOT CMAKE_BUILD_TYPE)
-set(CMAKE_BUILD_TYPE DEBUG)
-endif()
+if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE DEBUG)
+endif ()
 
 ##### Modules #####
 
 # Libraries can be added to the LIBS variable
 # or manually included here.
 
-# Add base libs (emlib, emdrv, CMSIS, device files)
-include(${BASE_LOCATION}/toolchain/firmata.cmake)
+# Add base libs (emlib, CMSIS, device files)
+include(${BASE_LOCATION}/toolchain/balena-sdk.cmake)
+
+add_subdirectory(${BASE_LOCATION}/cmsis)
+add_subdirectory(${BASE_LOCATION}/emlib)
+add_subdirectory(${BASE_LOCATION}/emdrv)
+add_subdirectory(${BASE_LOCATION}/device)
+add_subdirectory(${BASE_LOCATION}/protocol)
+add_subdirectory(${BASE_LOCATION}/hardware)
+
+# This is normally set in efm32-base.cmake, but libraries may modify it so set
+# it after libraries/subdirectories have been added
+set(CMAKE_EXE_LINKER_FLAGS "${COMMON_DEFINITIONS} -Xlinker -T${LINKER_SCRIPT} -Wl,-Map=${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}.map -Wl,--gc-sections -Wl,-v")
 
 ##### Files #####
 
@@ -55,21 +68,22 @@ include_directories(
 	${BASE_LOCATION}/include/config
 )
 
-# Add project sources
-set(SOURCES
-	${BASE_LOCATION}/source/StandardFirmata.cpp
-	${BASE_LOCATION}/source/protocol/balena/balena.cpp
-	${BASE_LOCATION}/source/protocol/firmata/Firmata.cpp
-	${BASE_LOCATION}/source/protocol/firmata/FirmataMarshaller.cpp
-	${BASE_LOCATION}/source/protocol/firmata/FirmataParser.cpp
-	${BASE_LOCATION}/source/protocol/serial/Serial.cpp
-)
-
-##### Outputs #####
-
 # Generate executable and link
-add_executable(${TARGET} ${SOURCES})
-target_link_libraries(${TARGET} ${LIBS})
+add_executable(${PROJECT_NAME}
+        source/main.cpp)
+
+efm32_configure_linker_addresses(${PROJECT_NAME})
+
+target_link_libraries(${PROJECT_NAME} ${LIBS} emlib emdrv cmsis device)
+
+# Link optional libraries if available
+if (${HAS_HARDWARE})
+    target_link_libraries(${PROJECT_NAME} hardware)
+endif ()
+
+if (${HAS_PROTOCOL})
+    target_link_libraries(${PROJECT_NAME} protocol)
+endif ()
 
 ##### Post build #####
 
@@ -79,3 +93,7 @@ include(${BASE_LOCATION}/toolchain/post-build.cmake)
 # Add JLink commands
 include(${BASE_LOCATION}/toolchain/jlink.cmake)
 
+##### CMake debug prints #####
+if (CMAKE_VERBOSE_MAKEFILE)
+    print_debug_info()
+endif()
