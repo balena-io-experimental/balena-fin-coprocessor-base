@@ -24,7 +24,7 @@ include(${BASE_LOCATION}/toolchain/arm-gcc.cmake)
 ##### Project Setup #####
 
 # Configure project and languages
-project(efm32-test C CXX ASM)
+project(balena-sdk C CXX ASM)
 
 # Set device
 if (NOT DEVICE)
@@ -45,7 +45,7 @@ endif ()
 # or manually included here.
 
 # Add base libs (emlib, CMSIS, device files)
-include(${BASE_LOCATION}/toolchain/efm32-base.cmake)
+include(${BASE_LOCATION}/toolchain/balena-sdk.cmake)
 
 add_subdirectory(${BASE_LOCATION}/cmsis)
 add_subdirectory(${BASE_LOCATION}/emlib)
