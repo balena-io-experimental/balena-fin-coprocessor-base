@@ -9,4 +9,8 @@ target_include_directories(${PROJECT_NAME} PUBLIC
         inc
         config)
 
-target_link_libraries(${PROJECT_NAME} emlib emdrv)
+if(${HAS_HARDWARE})
+        target_link_libraries(${PROJECT_NAME} emlib emdrv hardware)
+else()
+        target_link_libraries(${PROJECT_NAME} emlib emdrv)
+endif()

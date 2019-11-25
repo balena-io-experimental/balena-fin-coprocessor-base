@@ -8,7 +8,7 @@
 
 
 // Top level macros
-#define SILABS_AF_DEVICE_NAME "soc-empty"
+#define SILABS_AF_DEVICE_NAME "balenaFin"
 
 
 // Generated plugin macros
