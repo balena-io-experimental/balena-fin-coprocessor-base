@@ -3,7 +3,7 @@
 
 #include "board_features.h"
 #include "hal-config-board.h"
-#include "hal-config-app-common.h"
+// #include "hal-config-app-common.h"
 
 #define HAL_VCOM_ENABLE                   (0)
 #define HAL_I2CSENSOR_ENABLE              (0)
