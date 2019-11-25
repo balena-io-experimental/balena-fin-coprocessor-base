@@ -1,64 +1,74 @@
-# BalenaFin Co-Processor Firmata [![build](https://img.shields.io/badge/release-beta-brightgreen.svg)]()
+# BalenaFin Co-Processor Base [![build](https://img.shields.io/badge/release-beta-brightgreen.svg)]()
 
-This is an implementation of the [Firmata](https://github.com/firmata/protocol) protocol for SiliconLabs BGM111. It is compatible with standard Firmata 2.5.8. Please be aware this **project is in beta release** and is subject to change frequently up until release.
+This base project is designed to provide a quick and platform independent method of building projects for the balenaFin coprocessor.
 
-### Installation
-
-### Dockerfile
-
-The easiest way to install the Firmata application onto your board is to run the [balena application](https://github.com/balena-io-playground/balena-fin-firmata-flash) provided. This targets the latest verision of the Balena Firmata application. This balena application will run and install [OpenOCD](http://openocd.org/) on your Fin in order to provision the Coprocessor with both a bootloader and the Firmata application.
-
-### Build & Manually Flash
-
-It is also possible to build the source and manually flash the Coprocessor however, in order to flash the Coprocessor you will need to either load the compiled firmware onto the Compute Module and flash it using OpenOCD or program the Coprocessor using an external programmer such as a [Segger JLink ](https://www.segger.com/products/debug-probes/j-link/).
-
-#### Dependencies
+## Dependencies
 
  - cmake
  - make
- - arm-none-eabi-gcc
+ - [arm-none-eabi-gcc](https://launchpad.net/gcc-arm-embedded/+download)
+ - [JLink](https://www.segger.com/jlink-software.html)
 
-If using a JLink programmer to externally flash:
+## Usage
 
- - [JLink tools](https://www.segger.com/jlink-software.html)
+This project can either be used standalone or as a submodule, for example see [balena-fin-coprocessor-firmata](https://github.com/balena-io/balena-fin-coprocessor-firmata).
 
-#### Building/Flashing
+### Standalone
 
-With the dependencies installed, run:
+1. Download this repository
+2. Change the project name and device in the CMakeLists.txt file
+3. Move source  and include files into the src and inc directories
+4. Add source files to the CMakeLists.txt file
 
-1. `make setup` to generate the build directory
-2. `make balena` to execute the build
+### Submodule
 
-If using a JLink programmer to externally flash:
+1. Add the submodule to main project using:  
+   `git submodule add https://github.com/balena-io-playground/balena-fin-coprocessor-base.git`  
+   `git submodule update`  
+2. Copy the CMakeLists.txt file from this project (balena-sdk) to the top level of the main project
+3. Update the project name and BASE_LOCATION variables in the new CMakeLists.txt
+4. Add source files (and cmake libraries) to the CMakeLists.txt file
 
-3. `make flash` to flash to a device
+## Building
 
-### Firmata Protocol v2.5.8
+To build the project, the following flow can be used:
 
-| type                  | command | MIDI channel | first byte          | second byte     | support              |
-| --------------------- | ------- | ------------ | ------------------- | --------------- | -------------------- |
-| analog I/O message    | 0xE0    | pin #        | LSB(bits 0-6)       | MSB(bits 7-13)  |          ✅          |
-| digital I/O message   | 0x90    | port         | LSB(bits 0-6)       | MSB(bits 7-13)  |          ✅          |
-| report analog pin     | 0xC0    | pin #        | disable/enable(0/1) | - n/a -         |          ✅          |
-| report digital port   | 0xD0    | port         | disable/enable(0/1) | - n/a -         |          ✅          |
-|                       |         |              |                     |                 |                      |
-| start sysex           | 0xF0    |              |                     |                 |          ✅          |
-| set pin mode(I/O)     | 0xF4    |              | pin # (0-127)       | pin mode        |          ✅          |
-| set digital pin value | 0xF5    |              | pin # (0-127)       | pin value(0/1)  |          ✅          |
-| sysex end             | 0xF7    |              |                     |                 |          ✅          |
-| protocol version      | 0xF9    |              | major version       | minor version   |          ✅          |
-| system reset          | 0xFF    |              |                     |                 |          ✅          |
+```bash
+mkdir build
+cd build
+cmake ..
+make
+make flash
+```
 
-Sysex-based sub-commands (0x00 - 0x7F) are used for an extended command set.
-
-When configuring the build, you may want to define (either in `CMakeLists.txt`or using the `-D` flag) the variables `DEVICE`, `FLASH_ORIGIN`, `FLASH_LENGTH`, `RAM_ORIGIN` and `RAM_LENGTH`. If not defined, the build will use the default memory addresses and sizes for the FLASH and RAM regions defined in the Silicon Labs provided linker script for your device (these are usually `0x00000000` and `0x20000000` for flash start and RAM start, respectively).
+When configuring the build, (either in `CMakeLists.txt`or using the `-D` flag) the variables such as `DEVICE`, `FLASH_ORIGIN`, `FLASH_LENGTH`, `RAM_ORIGIN` and `RAM_LENGTH` can be defined. If not defined, the build will use the default memory addresses and sizes for the FLASH and RAM regions specified in the Silicon Labs provided linker script for the selected device.
 
 ## Debugging
 
-### Planned Features
+Debugging using a Segger J-Link device (such as on Silabs Dev Kits) requires two processes, a GDB server that connects to the target and provides a local interface as well as a GDB instance that connects to this interface. Open two terminal sessions and run:
 
-- [ ] I2C Support
-- [ ] Support for RTC control of Compute Module Power Rails
-- [ ] SPI Support
-- [ ] Custom Client Library for balenaFin features
+1. `make debug-server` or `make ds` from the first session to start the debug server and connect to the target
+2. `make debug` or `make d` from the second session to launch GDB in Terminal User Interface (TUI) mode
+
+This can then be used with the GDB interface to interact with the running application.
+
+## Updating
+
+### Add devices / Update the SDK:
+
+1. Grab the Silabs Gecko SDK (likely will need to download Simplicity Studio and extract this).
+2. Copy the `cmsis`, `device`, `drivers`, `emdrv` and `emlib` folders from the SDK into this repo.
+3. Add provide entry point for building specified device, i.e. `make bgm111`
+4. Add fixes to the `.cmake` files through the repo to correct any new naming inconsistencies (ie. `EFM32G210F128` vs. `EFR32FG13P231F512GM48`.
+5. Open a PR against the `master`
+
+## Licensing
+
+TBD - pending Silabs license query. 
+
+Based on [efm32-base](https://github.com/ryankurte/efm32-base) under MIT license.
+
+
+
+
 
