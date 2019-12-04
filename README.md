@@ -34,14 +34,10 @@ This project can either be used standalone or as a submodule, for example see [b
 To build the project, the following flow can be used:
 
 ```bash
-mkdir build
-cd build
-cmake ..
-make
-make flash
+make setup
+make bgm1
 ```
-
-When configuring the build, (either in `CMakeLists.txt`or using the `-D` flag) the variables such as `DEVICE`, `FLASH_ORIGIN`, `FLASH_LENGTH`, `RAM_ORIGIN` and `RAM_LENGTH` can be defined. If not defined, the build will use the default memory addresses and sizes for the FLASH and RAM regions specified in the Silicon Labs provided linker script for the selected device.
+This will create a `builds` folder, and create another folder named `bgm1` inside that which will have your `.bin`, `.hex`, and `.map` files.
 
 ## Debugging
 
