@@ -16,7 +16,6 @@
 #include "em_emu.h"
 #include "em_gpio.h"
 #include "sleep.h"
-#include "i2cspm.h"
 
 volatile uint32_t msTicks; /* counts 1ms timeTicks */
 

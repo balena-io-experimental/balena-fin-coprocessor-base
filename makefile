@@ -75,8 +75,8 @@ bgm13:
 bgm1:
 	cd builds; rm -rf $@; mkdir $@; cd $@; cmake -DDEVICE=BGM111A256V2 -DBOARD=BGM11_BRD4300A ../..; make;
 #BGM13 Family
-dev:
-	cd builds; rm -rf $@; mkdir $@; cd $@; cmake -DDEVICE=EFR32BG1B232F256GM48 -DBOARD=BRD4100A ../..; make;
+bgm1b:
+	cd builds; rm -rf $@; mkdir $@; cd $@; cmake -DDEVICE=EFR32BG1B232F256GM48 ../..; make;
 
 clean:
 	rm -rf builds
