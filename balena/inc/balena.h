@@ -67,6 +67,7 @@ extern "C" {
 #define CORE_FREQUENCY  14000000
 #define RTC_MIN_TIMEOUT 32000
 #define I2C_RXBUFFER_SIZE 10
+#define I2C_TXBUFFER_SIZE 10
 #define CMD_ARRAY_SIZE        1
 #define DATA_ARRAY_SIZE       10
 

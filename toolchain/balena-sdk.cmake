@@ -13,7 +13,7 @@ function(efm32_configure_linker_addresses target)
     else()
         # We always need to set FLASH_ORIGIN so that the script
         # toolchain/flash.in gets configured correctly.
-        set(FLASH_ORIGIN 0x00000000 PARENT_SCOPE)
+        set(FLASH_ORIGIN 0x00004000 PARENT_SCOPE)
     endif()
 
     if(FLASH_LENGTH)

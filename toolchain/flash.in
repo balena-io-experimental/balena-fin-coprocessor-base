@@ -1,7 +1,9 @@
 device ${DEVICE}
 h
 r
-loadbin ${BINARY}, ${FLASH_ORIGIN}
+loadbin /home/alex/GitHub/balena-fin-coprocessor-firmata/balena-sdk/bootloader/bgm1b.s37, 0x0000
+r
+loadbin ${BINARY}, 0x00004000
 r
 g
 qc
