@@ -1,5 +1,7 @@
 # BalenaFin Co-Processor Base [![build](https://img.shields.io/badge/release-beta-brightgreen.svg)]()
 
+*Please be aware that this is currently under beta-release.*
+
 This base project is designed to provide a quick and platform independent method of building projects for the balenaFin coprocessor.
 
 ## Dependencies
@@ -34,10 +36,9 @@ This project can either be used standalone or as a submodule, for example see [b
 To build the project, the following flow can be used:
 
 ```bash
-mkdir build
-cd build
-cmake ..
-make
+make setup
+make balena
+cd builds/balena
 make flash
 ```
 
