@@ -7,6 +7,10 @@
 
 test: setup efm32g efm32gg efm32zg efm32wg efm32lg efm32tg efm32hg ezr32lg ezr32wg efm32pg efr32fg bgm13
 
+#BalenaFin
+balena:
+	cd builds; rm -rf $@; mkdir $@; cd $@; cmake -DDEVICE=EFR32BG1B232F256GM48 ../..; make
+
 setup:
 	mkdir -p builds
 
