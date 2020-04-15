@@ -28,7 +28,7 @@ project(efm32-test C CXX ASM)
 
 # Set device
 if (NOT DEVICE)
-    set(DEVICE EFM32G210F128)
+    set(DEVICE EFR32BG1B232F256GM48)
     # set(DEVICE BGM13P22F512GA)
     # set(BOARD BRD4306A)
     # set(BLE_LIB EFR32BG13P)
@@ -44,13 +44,13 @@ endif ()
 # Libraries can be added to the LIBS variable
 # or manually included here.
 
-# Add base libs (emlib, CMSIS, device files)
+# Add base libs (emlib, emdrv, CMSIS, device files)
 include(${BASE_LOCATION}/toolchain/efm32-base.cmake)
 
 add_subdirectory(${BASE_LOCATION}/cmsis)
+add_subdirectory(${BASE_LOCATION}/emdrv)
 add_subdirectory(${BASE_LOCATION}/emlib)
 add_subdirectory(${BASE_LOCATION}/device)
-add_subdirectory(${BASE_LOCATION}/protocol)
 add_subdirectory(${BASE_LOCATION}/hardware)
 
 # This is normally set in efm32-base.cmake, but libraries may modify it so set
@@ -60,24 +60,22 @@ set(CMAKE_EXE_LINKER_FLAGS "${COMMON_DEFINITIONS} -Xlinker -T${LINKER_SCRIPT} -W
 ##### Files #####
 
 # Add project headers
-include_directories(${BASE_LOCATION}/include)
+include_directories(
+	${BASE_LOCATION}/include
+)
+
+#Add project sources
+set(SOURCES
+	${BASE_LOCATION}/source/protocol/balena/balena.cpp
+    ${BASE_LOCATION}/source/protocol/serial/Serial.cpp
+)
 
 # Generate executable and link
-add_executable(${PROJECT_NAME}
-        source/main.c)
+add_executable(${PROJECT_NAME} ${SOURCES})
 
 efm32_configure_linker_addresses(${PROJECT_NAME})
 
-target_link_libraries(${PROJECT_NAME} ${LIBS} emlib cmsis device)
-
-# Link optional libraries if available
-if (${HAS_HARDWARE})
-    target_link_libraries(${PROJECT_NAME} hardware)
-endif ()
-
-if (${HAS_PROTOCOL})
-    target_link_libraries(${PROJECT_NAME} protocol)
-endif ()
+target_link_libraries(${PROJECT_NAME} ${LIBS} emlib emdrv cmsis device)
 
 ##### Post build #####
 
