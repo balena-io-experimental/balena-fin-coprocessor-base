@@ -66,8 +66,7 @@ include_directories(
 
 #Add project sources
 set(SOURCES
-	${BASE_LOCATION}/source/protocol/balena/balena.cpp
-    ${BASE_LOCATION}/source/protocol/serial/Serial.cpp
+	${BASE_LOCATION}/source/main.cpp
 )
 
 # Generate executable and link
