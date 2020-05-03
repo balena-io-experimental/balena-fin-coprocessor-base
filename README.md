@@ -1,107 +1,58 @@
-# EFM32 Base Project
+# BalenaFin Coprocessor Base
 
-This base project is designed to provide a quick and platform independent method of building projects for Silicon Labs EFM32 microcontrollers.  
-Designed and tested on OSX and Debian. Windows might work with cygwig/mingw/gnuwindows tools, but hasn't been attempted.
-
-If you have any issues, suggestions or alterations, feel free to open an issue or a pull request.
-
-[![Build Status](https://travis-ci.org/ryankurte/efm32-base.svg)](https://travis-ci.org/ryankurte/efm32-base)
-
-## Motivation
-
- - Getting started with Microcontrollers is hard (and time consuming)
- - Vendor IDEs are ultimately useless when approaching testing and build-automation
-
-This project addresses this by providing a common base for for projects using Silicon Labs EFM32, EZR32 and EFR32 processors.   
-If you're not into cmake, you might want to check out [ARM Mbed Yotta](http://yottadocs.mbed.com/) or [PlatformIO](http://platformio.org/), both of which offer higher level approaches to embedded setup/development.
+This repo is designed to provide a base library for developing applications for the balenaFin coprocessor. 
+Please note that this repo is **not an example for the coprocessor** but rather a submodule for other projects.
 
 ## Dependencies
 
- - cmake - use brew on osx, or your favourite package manager for linux
- - make - should be available by default, otherwise as above
- - arm-none-eabi-gcc - Embedded ARM Compiler/Toolchain (https://launchpad.net/gcc-arm-embedded/+download)
- - JLink tools - download and install from https://www.segger.com/jlink-software.html
+ - cmake
+ - make
+ - arm-none-eabi-gcc
 
-If you're into docker, check out [ryankurte/docker-arm-embedded](https://hub.docker.com/r/ryankurte/docker-arm-embedded/) for a containerised toolchain. You will still need JLink tools locally to flash and debug.
+If flashing a JLink development kit
 
-## Usage
+ - JLink  
 
-This project can either be used directly or as a submodule in a larger project.
-Note that submodule use will allow updates to this project for fixes or further device support.  
-For an example project using this method, see [ryankurte/usb-thing](https://github.com/ryankurte/usb-thing).
+### Dockerfile
 
-### To use the project directly:
+TBD
 
-1. Download this repository
-2. Change the project name and device in the CMakeLists.txt file
-3. Move your source  and include files into the source and include directories
-4. Add your source files to the CMakeLists.txt file
-5. Make something awesome!
+### Usage
 
-### To use this project as a submodule:
-
-1. Add the submodule to your (already git controlled) project using:  
-   `git submodule add https://github.com/ryankurte/efm32-base.git`  
+1. Add the submodule to your project (using git) using:  
+   `git submodule add https://github.com/balena-io-playground/balena-fin-coprocessor-base.git`  
    `git submodule update`  
-2. Copy the CMakeLists.txt file from this project (efm32-base) to the top level of your project
-3. Update the project name and BASE_LOCATION variables in the new CMakeLists.txt
-4. Add your source files (and cmake libraries) to the CMakeLists.txt file
-5. Make something even more awesome!
+2. Copy `CMakeLists.txt` from this project (balenafin) to the top level of your project
+3. Update the `project name` and `BASE_LOCATION` variables in the new `CMakeLists.txt`
+4. Add your source files (and any additional cmake libraries) to the `CMakeLists.txt` file
 
 ## Building
 
 Once you have integrated this project with your project, you can build in the standard cmake manner.
 
-1. `mkdir build` to create the build directory
-2. `cd build` to switch to the build directory
-3. `cmake ..` to configure the build
-4. `make` to execute the build
-5. `make flash` to flash to a device
+1. `make setup` to setup the project
+2. `make balena` to build and compile for the balenaFin
 
-When configuring the build, you may want to define (either in `CMakeLists.txt`or using the `-D` flag) the variables `DEVICE`, `FLASH_ORIGIN`, `FLASH_LENGTH`, `RAM_ORIGIN` and `RAM_LENGTH`. If not defined, the build will use the default memory addresses and sizes for the FLASH and RAM regions defined in the Silicon Labs provided linker script for your device (these are usually `0x00000000` and `0x20000000` for flash start and RAM start, respectively).
+## Credit
 
-## Debugging
-
-Debugging using a Segger J-Link device (as is present on the Silicon Labs evaluation boards) requires two processes, a GDB server that connects to the target and provides a local interface as well as a GDB instance that connects to this interface. As such, you have to run two terminal sessions and swap between a bit to use this.
-
-1. `make debug-server` or `make ds` from the first session to start the debug server and connect to the target
-2. `make debug` or `make d` from the second session to launch GDB in Terminal User Interface (TUI) mode
-
-You can then use the GDB interface to interact with the running application.
-
-## Updating this project
-
-### To add devices / update the SDK:
-
-1.  Grab the silabs [Gecko SDK](https://github.com/SiliconLabs/Gecko_SDK) from somewhere (note that github is no longer supported/updated by silabs).
-2. Copy the `cmsis`, `device`, `drivers`, `emdrv` and `emlib` folders from the SDK into this repo.
-3. Add [a test (or tests)](https://github.com/ryankurte/efm32-base/blob/master/makefile) to build the new chip families
-4. Add hacks to the `.cmake` files through the repo to fix any new naming inconsistencies (ie. `EFM32G210F128` vs. `EFR32FG13P231F512GM48` until all the tests build again.
-5. Open a PR against the master
-6. [Maintainer] Review/Accept PR and Tag the repo with the Gecko SDK version
-
-### To add/fix tooling
-
-1. Open an issue with the issue you're having
-2. Fork and open a PR referencing the issue
-3. [Maintainer] Review/Accept PR
+This project is made possible by the work of Ryan Kurte from [EFM32 Base Project](https://github.com/ryankurte/efm32-base).
 
 ## Licensing
 
-Since this is a combination of a number of Silicon Labs (ex. Energy Micro) components, as well as custom additions, licensing is a little interesting. A summary of the licenses involved follows, but I take no responsibility for the accuracy or interpretation of such.  
+Due to the nature of this project pulling in a number of resources, the licenses vary depending on component.
 
-The CMSIS Core falls under a fairly permissive ARM [license](cmsis/Include/arm_common_tables.h). This requires that the license requires the copyright and license note to be distributed in the documentation accompanying binary distribution, and that the name ARM LIMITED may not be used to promote any products derived from this without written permission.  
+### EFM32 Base Project
 
-The device and emlib components fall under the above ARM license (startup files) as well as a permissive Silicon Labs [license](device/EFM32GG/efm32gg280f1024.h). This allows use, alteration and distribution for any purpose provided the origin of the source is not represented, altered versions are plainly marked, and the notice is not removed from the source distribution.  
+All reused components from [EFM32 Base Project](https://github.com/ryankurte/efm32-base) are available under the MIT license.
 
-Drivers are covered by the [Silabs License Agreement](drivers/Silabs_License_Agreement.txt). This is similar to the the license above, however prohibits sublicensing the included code and use of the code on non-silabs devices.  
+### CMSIS
 
-The CMake components of this project are distributed under the MIT license.  
+The CMSIS Core falls under a fairly permissive ARM [license](cmsis/Include/arm_common_tables.h). 
 
-What does all this mean?  
- * Commercial use is not a problem (as you would expect)
- * Licenses need to be distributed with device binaries
- * Unless you are using the Driver module (ie. USB) you can probably re/sublicense things.
- * I have no idea how this interacts with common FOSS licenses :-/
+### Silabs
+
+The `device` and `emlib` components fall under the above ARM license (startup files) as well as a permissive Silicon Labs license, [for example](device/EFR32BG1B/Include/em_device.h).
+Drivers are covered by the [Silabs License Agreement](drivers/Silabs_License_Agreement.txt). 
+
 
 

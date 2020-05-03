@@ -11,15 +11,12 @@
 #include "em_chip.h"
 #include "em_timer.h"
 #include "em_i2c.h"
-#include "ble-configuration.h"
-#include "board_features.h"
-#include "hal-config.h"
 #include "ustimer.h"
 #include "tempdrv.h"
 #include "rtcdriver.h"
+#include "version.h"
+#include "config.h"
 #include <cstddef>
-
-#include "bsphalconfig.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -70,6 +67,7 @@ extern "C" {
 #define I2C_TXBUFFER_SIZE 10
 #define CMD_ARRAY_SIZE        1
 #define DATA_ARRAY_SIZE       10
+#define I2C_ERR            0xFF
 
 typedef unsigned char byte;
 
@@ -126,16 +124,13 @@ void setIDAC(unsigned int pin_no, IDAC_TypeDef * dac);
 void resetPWM(byte pin);
 bool setPWM(unsigned int pin_no, byte duty_cycle);
 
-/* GPIO Functions */
-void deviceMode(unsigned int pin_no, unsigned int mode);
-
 /* RTC Functions */
 void triggerEvent(uint32_t timeout, RTCDRV_Callback_t callback);
 
 /* I2C Functions */
-void initI2C(void);
-void transferI2C(uint16_t device_addr, uint8_t cmd_array[], uint8_t data_array[], uint16_t cmd_len, uint16_t data_len, uint8_t flag);
-// TODO
+void initI2C(byte mode);
+void deinitI2C();
+int transferI2C(uint16_t device_addr, uint8_t cmd_array[], uint8_t data_array[], uint16_t cmd_len, uint16_t data_len, uint8_t flag);
 
 /* SPI Functions */
 // TODO

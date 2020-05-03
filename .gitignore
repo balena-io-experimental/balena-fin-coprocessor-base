@@ -18,3 +18,5 @@ builds/
 # Misc
 *.DS_Store
 
+# Versioning
+balena/inc/version.h

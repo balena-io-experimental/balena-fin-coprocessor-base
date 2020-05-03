@@ -13,9 +13,7 @@
 # Set minimum CMake version
 cmake_minimum_required(VERSION 2.8.4)
 
-# Optional verbose mode, uncomment or pass in -DCMAKE_VERBOSE_MAKEFILE=ON
-# set(CMAKE_VERBOSE_MAKEFILE ON)
-
+# Set balenafin project location
 set(BASE_LOCATION .)
 
 # Set the compiler (must be prior to project setup)
@@ -23,21 +21,26 @@ include(${BASE_LOCATION}/toolchain/arm-gcc.cmake)
 
 ##### Project Setup #####
 
-# Configure project and languages
-project(efm32-test C CXX ASM)
+# Set our output target
+set(TARGET balenafin)
 
-# Set device
-if (NOT DEVICE)
-    set(DEVICE EFR32BG1B232F256GM48)
-    # set(DEVICE BGM13P22F512GA)
-    # set(BOARD BRD4306A)
-    # set(BLE_LIB EFR32BG13P)
-endif ()
+# Configure project and languages
+project(${TARGET} C CXX ASM)
+
+# Set default device
+if(NOT DEVICE)
+set(DEVICE EFR32BG1B232F256GM48)
+endif()
+
+# Setup serial interface
+if(NOT SERIAL)
+set(SERIAL DEV)
+endif()
 
 # Set build
-if (NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE DEBUG)
-endif ()
+if(NOT CMAKE_BUILD_TYPE)
+set(CMAKE_BUILD_TYPE DEBUG)
+endif()
 
 ##### Modules #####
 
@@ -45,17 +48,7 @@ endif ()
 # or manually included here.
 
 # Add base libs (emlib, emdrv, CMSIS, device files)
-include(${BASE_LOCATION}/toolchain/efm32-base.cmake)
-
-add_subdirectory(${BASE_LOCATION}/cmsis)
-add_subdirectory(${BASE_LOCATION}/emdrv)
-add_subdirectory(${BASE_LOCATION}/emlib)
-add_subdirectory(${BASE_LOCATION}/device)
-add_subdirectory(${BASE_LOCATION}/hardware)
-
-# This is normally set in efm32-base.cmake, but libraries may modify it so set
-# it after libraries/subdirectories have been added
-set(CMAKE_EXE_LINKER_FLAGS "${COMMON_DEFINITIONS} -Xlinker -T${LINKER_SCRIPT} -Wl,-Map=${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}.map -Wl,--gc-sections -Wl,-v")
+include(${BASE_LOCATION}/toolchain/balenafin.cmake)
 
 ##### Files #####
 
@@ -64,18 +57,36 @@ include_directories(
 	${BASE_LOCATION}/include
 )
 
-#Add project sources
+add_subdirectory(${BASE_LOCATION}/cmsis)
+add_subdirectory(${BASE_LOCATION}/emlib)
+add_subdirectory(${BASE_LOCATION}/emdrv)
+add_subdirectory(${BASE_LOCATION}/device)
+add_subdirectory(${BASE_LOCATION}/protocol)
+add_subdirectory(${BASE_LOCATION}/balena)
+
+# Add project sources
 set(SOURCES
-	${BASE_LOCATION}/source/protocol/balena/balena.cpp
-    ${BASE_LOCATION}/source/protocol/serial/Serial.cpp
+	${BASE_LOCATION}/source/main.cpp
 )
 
+##### Outputs #####
+
 # Generate executable and link
-add_executable(${PROJECT_NAME} ${SOURCES})
+add_executable(${TARGET} ${SOURCES})
 
-efm32_configure_linker_addresses(${PROJECT_NAME})
+##### Git Versioning #####
 
-target_link_libraries(${PROJECT_NAME} ${LIBS} emlib emdrv cmsis device)
+# Add build tag to firmware version
+find_package(Git)
+add_custom_target(version
+  ${CMAKE_COMMAND} -D SRC=${CMAKE_SOURCE_DIR}/toolchain/version.h.in
+                   -D DST=${CMAKE_SOURCE_DIR}/balena/inc/version.h
+                   -D GIT_EXECUTABLE=${GIT_EXECUTABLE}
+                   -P ${CMAKE_SOURCE_DIR}/toolchain/version.cmake
+)
+add_dependencies(${TARGET} version)
+
+target_link_libraries(${TARGET} ${LIBS} emlib emdrv cmsis device balena)
 
 ##### Post build #####
 
@@ -84,8 +95,3 @@ include(${BASE_LOCATION}/toolchain/post-build.cmake)
 
 # Add JLink commands
 include(${BASE_LOCATION}/toolchain/jlink.cmake)
-
-##### CMake debug prints #####
-if (CMAKE_VERBOSE_MAKEFILE)
-    print_debug_info()
-endif()
