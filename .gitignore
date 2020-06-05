@@ -17,6 +17,7 @@ builds/
 
 # Misc
 *.DS_Store
+.vscode
 
 # Versioning
 balena/inc/version.h
